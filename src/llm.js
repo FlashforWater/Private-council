@@ -65,11 +65,16 @@ export const structuredAgentOutputSchema = {
 
 export function buildAgentPrompt({ role, session, options = {} }) {
   const canvas = session.canvas;
+  const outputLanguage =
+    session.locale === "zh"
+      ? "Respond in Simplified Chinese for all human-readable text values inside the JSON."
+      : "Respond in English for all human-readable text values inside the JSON.";
   const system = [
     "You are one role in Private Council, a structured personal decision council.",
     "You advise; the human decides.",
     "Preserve useful disagreement. Do not give regulated medical, legal, investment, or crisis advice.",
     `Your role is ${role.name}: ${role.purpose}`,
+    outputLanguage,
     "Return only valid JSON matching the requested schema. No Markdown, no commentary."
   ].join("\n");
 
@@ -79,6 +84,7 @@ export function buildAgentPrompt({ role, session, options = {} }) {
       mode: options.mode || "phase",
       directUserPrompt: options.prompt || "",
       phase: session.currentPhase,
+      locale: session.locale || "en",
       decision: {
         originalQuestion: canvas.problem.originalQuestion,
         refinedQuestion: canvas.problem.refinedQuestion,

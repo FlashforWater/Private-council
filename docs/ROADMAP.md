@@ -16,7 +16,7 @@
 - Calendar reminders
 - File and document ingestion
 - Web search integration
+- Provider presets for DeepSeek, Kimi, and Qwen model families
 - Production deployment hardening
 - Offline evaluation benchmark
 - Richer council presentation and avatars
-

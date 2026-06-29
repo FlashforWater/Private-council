@@ -42,5 +42,6 @@ Supported providers:
 - Anthropic
 - Gemini
 - DeepSeek
+- Kimi / Moonshot
+- Qwen / Alibaba Cloud Model Studio
 - Mock fallback
-

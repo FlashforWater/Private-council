@@ -147,6 +147,7 @@ export function createSession(input, now = new Date()) {
     session: {
       id: makeId("session"),
       title,
+      locale: ["zh", "en"].includes(input.locale) ? input.locale : "en",
       status: "active",
       currentPhase: "framing",
       createdAt,

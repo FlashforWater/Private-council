@@ -32,6 +32,10 @@ test("server session store persists and updates sessions", async () => {
 
     assert.equal(updated.title, "Updated decision");
     assert.equal((await store.get(session.id)).title, "Updated decision");
+
+    assert.equal(await store.remove(session.id), true);
+    assert.equal(await store.get(session.id), null);
+    assert.equal((await store.list()).length, 0);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

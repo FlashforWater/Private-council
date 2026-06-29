@@ -50,6 +50,7 @@ const rootDir = resolve(__dirname);
 
 await loadDotEnv();
 const port = Number(process.env.PORT || 4173);
+const host = process.env.HOST || "127.0.0.1";
 const dataPath = resolve(rootDir, process.env.COUNCIL_DATA_PATH || ".private-council-data/sessions.json");
 const memoryPath = resolve(rootDir, process.env.COUNCIL_MEMORY_PATH || ".private-council-data/memory.json");
 const store = new SessionStore(dataPath);
@@ -96,9 +97,12 @@ const server = createServer(async (request, response) => {
   }
 });
 
-server.listen(port, "127.0.0.1", () => {
+server.listen(port, host, () => {
   const config = getPublicConfig();
-  console.log(`Private Council server running at http://127.0.0.1:${port}/`);
+  console.log(`Private Council server running at http://${host}:${port}/`);
+  if (host === "0.0.0.0") {
+    console.log(`LAN access enabled. Use this Mac's local IP, for example http://<your-mac-ip>:${port}/`);
+  }
   console.log(`Agent provider: ${config.provider} (${config.model})`);
   console.log(`Session data: ${dataPath}`);
   console.log(`Memory data: ${memoryPath}`);
@@ -171,6 +175,10 @@ async function handleSessionRoute(request, response, match) {
     return sendJson(response, session);
   }
 
+  if (sessionId && !action && request.method === "DELETE") {
+    return sendJson(response, { deleted: await store.remove(sessionId) });
+  }
+
   if (sessionId && action === "report" && (request.method === "GET" || request.method === "HEAD")) {
     const current = await store.get(sessionId);
     if (!current) return sendJson(response, { error: "Session not found" }, 404);
@@ -194,7 +202,8 @@ async function handleSessionRoute(request, response, match) {
   const current = await store.get(sessionId);
   if (!current) return sendJson(response, { error: "Session not found" }, 404);
 
-  const next = await applySessionAction(current, action, body);
+  const baseSession = ["zh", "en"].includes(body.locale) ? { ...current, locale: body.locale } : current;
+  const next = await applySessionAction(baseSession, action, body);
   await store.upsert(next);
   return sendJson(response, next);
 }
@@ -219,6 +228,8 @@ async function applySessionAction(session, action, body) {
       return runPhaseServerSide(session);
     case "advance":
       return advanceSessionServerSide(session);
+    case "auto-run":
+      return autoRunSessionServerSide(session);
     case "ask":
       return askRoleServerSide(session, body.roleId, body.prompt || "");
     case "clarify":
@@ -337,6 +348,19 @@ async function advanceSessionServerSide(session) {
   return { ...next, updatedAt: new Date().toISOString() };
 }
 
+async function autoRunSessionServerSide(session) {
+  let next = structuredClone(session);
+  const stopPhases = new Set(["human_decision", "commitment", "scheduled_review", "retrospective", "closed"]);
+  let guard = 0;
+
+  while (!stopPhases.has(next.currentPhase) && guard < 8) {
+    next = await advanceSessionServerSide(next);
+    guard += 1;
+  }
+
+  return next;
+}
+
 async function askRoleServerSide(session, roleId, prompt) {
   if (process.env.COUNCIL_FORCE_MOCK === "true") {
     return askRole(session, roleId, prompt);
@@ -397,7 +421,11 @@ function resolveProvider(requestedProvider, requestedModel, roleId = "chair") {
     openai: openaiProvider,
     anthropic: anthropicProvider,
     gemini: geminiProvider,
-    deepseek: deepseekProvider
+    deepseek: deepseekProvider,
+    kimi: kimiProvider,
+    moonshot: kimiProvider,
+    qwen: qwenProvider,
+    tongyi: qwenProvider
   };
 
   if (requested !== "auto" && requested !== "mock") {
@@ -411,6 +439,8 @@ function resolveProvider(requestedProvider, requestedModel, roleId = "chair") {
     anthropicProvider(requestedModel, roleId) ||
     geminiProvider(requestedModel, roleId) ||
     deepseekProvider(requestedModel, roleId) ||
+    kimiProvider(requestedModel, roleId) ||
+    qwenProvider(requestedModel, roleId) ||
     mockProvider()
   );
 }
@@ -425,7 +455,9 @@ function getPublicConfig() {
       { id: "openai", configured: Boolean(process.env.OPENAI_API_KEY), model: process.env.OPENAI_MODEL || "" },
       { id: "anthropic", configured: Boolean(process.env.ANTHROPIC_API_KEY), model: process.env.ANTHROPIC_MODEL || "" },
       { id: "gemini", configured: Boolean(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY), model: process.env.GEMINI_MODEL || "" },
-      { id: "deepseek", configured: Boolean(process.env.DEEPSEEK_API_KEY), model: process.env.DEEPSEEK_MODEL || "" }
+      { id: "deepseek", configured: Boolean(process.env.DEEPSEEK_API_KEY), model: process.env.DEEPSEEK_MODEL || "" },
+      { id: "kimi", configured: Boolean(process.env.MOONSHOT_API_KEY || process.env.KIMI_API_KEY), model: process.env.KIMI_MODEL || process.env.MOONSHOT_MODEL || "" },
+      { id: "qwen", configured: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY), model: process.env.QWEN_MODEL || "" }
     ],
     roleRoutes: COUNCIL_ROLES.map((role) => roleRouteFromEnv(role.id)),
     message:
@@ -529,13 +561,81 @@ function geminiProvider(requestedModel) {
 function deepseekProvider(requestedModel) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) return null;
-  const model = requestedModel || process.env.DEEPSEEK_MODEL || process.env.COUNCIL_MODEL || "deepseek-chat";
+  const model = requestedModel || process.env.DEEPSEEK_MODEL || process.env.COUNCIL_MODEL || "deepseek-v4-flash";
   return {
     id: "deepseek",
     model,
     run: async ({ system, user }) => {
       const data = await postJson(
         "https://api.deepseek.com/chat/completions",
+        {
+          model,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user }
+          ],
+          response_format: { type: "json_object" }
+        },
+        {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      );
+      return normalizeStructuredOutput(parseProviderText(data));
+    }
+  };
+}
+
+function kimiProvider(requestedModel) {
+  const apiKey = process.env.MOONSHOT_API_KEY || process.env.KIMI_API_KEY;
+  if (!apiKey) return null;
+  const model = requestedModel || process.env.KIMI_MODEL || process.env.MOONSHOT_MODEL || process.env.COUNCIL_MODEL || "kimi-k2.6";
+  const baseUrl = process.env.MOONSHOT_BASE_URL || process.env.KIMI_BASE_URL || "https://api.moonshot.cn/v1";
+  return {
+    id: "kimi",
+    model,
+    run: async ({ system, user }) => {
+      const data = await postJson(
+        `${baseUrl.replace(/\/$/, "")}/chat/completions`,
+        {
+          model,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user }
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "structured_agent_output",
+              strict: true,
+              schema: structuredAgentOutputSchema
+            }
+          }
+        },
+        {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      );
+      return normalizeStructuredOutput(parseProviderText(data));
+    }
+  };
+}
+
+function qwenProvider(requestedModel) {
+  const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
+  if (!apiKey) return null;
+  const model = requestedModel || process.env.QWEN_MODEL || process.env.COUNCIL_MODEL || "qwen-plus";
+  const baseUrl =
+    process.env.QWEN_BASE_URL ||
+    process.env.DASHSCOPE_BASE_URL ||
+    "https://dashscope.aliyuncs.com/compatible-mode/v1";
+  return {
+    id: "qwen",
+    model,
+    run: async ({ system, user }) => {
+      const data = await postJson(
+        `${baseUrl.replace(/\/$/, "")}/chat/completions`,
         {
           model,
           messages: [

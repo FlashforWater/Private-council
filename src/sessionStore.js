@@ -36,6 +36,13 @@ export class SessionStore {
     return next;
   }
 
+  async remove(id) {
+    const sessions = await this.#readAll();
+    const next = sessions.filter((session) => session.id !== id);
+    await this.#writeAll(next);
+    return sessions.length !== next.length;
+  }
+
   async #readAll() {
     try {
       const raw = await readFile(this.filePath, "utf8");

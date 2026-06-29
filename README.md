@@ -119,7 +119,7 @@ Read more:
 - Server-side session persistence
 - Structured decision state machine
 - Council roles: Chair, Strategist, Skeptic, Operator, Researcher, User Advocate, Reflector
-- OpenAI, Anthropic, Gemini, and DeepSeek adapter layer
+- OpenAI, Anthropic, Gemini, DeepSeek, Kimi, and Qwen adapter layer
 - Per-role provider/model routing
 - Mock fallback when keys are missing or provider calls fail
 - Decision Canvas
@@ -169,15 +169,19 @@ OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GOOGLE_API_KEY=
 DEEPSEEK_API_KEY=
+MOONSHOT_API_KEY=
+DASHSCOPE_API_KEY=
 ```
 
 Optional per-role routing:
 
 ```bash
-COUNCIL_PROVIDER_SKEPTIC=anthropic
-COUNCIL_MODEL_SKEPTIC=claude-sonnet-4-5
-COUNCIL_PROVIDER_RESEARCHER=gemini
-COUNCIL_MODEL_RESEARCHER=gemini-2.5-flash
+COUNCIL_PROVIDER_CHAIR=kimi
+COUNCIL_MODEL_CHAIR=kimi-k2.6
+COUNCIL_PROVIDER_SKEPTIC=deepseek
+COUNCIL_MODEL_SKEPTIC=deepseek-v4-flash
+COUNCIL_PROVIDER_RESEARCHER=qwen
+COUNCIL_MODEL_RESEARCHER=qwen-plus
 ```
 
 API keys are read only by the local Node server and are not sent to the browser.

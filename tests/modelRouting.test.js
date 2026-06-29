@@ -25,3 +25,19 @@ test("role route falls back to global route", () => {
   assert.equal(route.model, "gemini-planner");
   assert.equal(envKeyForRole("COUNCIL_MODEL", "user_advocate"), "COUNCIL_MODEL_USER_ADVOCATE");
 });
+
+test("role route supports domestic provider names", () => {
+  const kimi = roleRouteFromEnv("chair", {
+    COUNCIL_PROVIDER_CHAIR: "kimi",
+    COUNCIL_MODEL_CHAIR: "kimi-k2.6"
+  });
+  const qwen = roleRouteFromEnv("researcher", {
+    COUNCIL_PROVIDER_RESEARCHER: "qwen",
+    COUNCIL_MODEL_RESEARCHER: "qwen-plus"
+  });
+
+  assert.equal(kimi.provider, "kimi");
+  assert.equal(kimi.model, "kimi-k2.6");
+  assert.equal(qwen.provider, "qwen");
+  assert.equal(qwen.model, "qwen-plus");
+});

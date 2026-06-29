@@ -11,11 +11,13 @@ import {
   addServerEvidence,
   advanceServerSession,
   askServerRole,
+  autoRunServerSession,
   clarifyServerContext,
   completeServerRetrospective,
   crossValidateServerSession,
   createServerSession,
   deleteServerMemory,
+  deleteServerSession,
   loadServerMemory,
   loadServerSessions,
   recordServerDecision,
@@ -27,6 +29,353 @@ import {
 } from "./sessionApi.js";
 
 const app = document.querySelector("#app");
+const savedLocale = localStorage.getItem("privateCouncil.locale");
+const initialLocale = ["zh", "en"].includes(savedLocale) ? savedLocale : "zh";
+
+const TEXT = {
+  en: {
+    tagline: "Structured decisions, not open-ended chat.",
+    decisionQuestion: "Decision question",
+    decisionQuestionPlaceholder: "Should I quit my job to work on my AI product?",
+    background: "Background",
+    backgroundPlaceholder: "What matters, what happened, and what options are visible?",
+    currentLeaning: "Current leaning",
+    currentLeaningPlaceholder: "I am leaning toward...",
+    timeHorizon: "Time horizon",
+    timeHorizonPlaceholder: "2 weeks, 6 months...",
+    emotionalState: "Emotional state",
+    emotionalStatePlaceholder: "Excited, anxious...",
+    constraints: "Constraints",
+    constraintsPlaceholder: "Money, time, family, legal boundaries...",
+    startCouncil: "Start council",
+    sessions: "Sessions",
+    dueReviews: "Due Reviews",
+    memory: "Memory",
+    delete: "Delete",
+    noSessions: "No sessions yet.",
+    noMemory: "No saved memory.",
+    modelsOnline: "Models online",
+    modelStatus: "Model status",
+    councilRoom: "Council Room",
+    transcript: "Transcript",
+    decisionCanvas: "Decision Canvas",
+    traceableRecord: "Traceable record",
+    decided: "decided",
+    forming: "forming",
+    problem: "Problem",
+    retrievedMemory: "Retrieved Memory",
+    protocol: "Protocol",
+    options: "Options",
+    criteria: "Criteria",
+    evaluation: "Evaluation",
+    keyClaims: "Key Claims",
+    noClaims: "No claims yet.",
+    assumptions: "Assumptions",
+    noAssumptions: "No assumptions yet.",
+    risks: "Risks",
+    evidence: "Evidence",
+    disagreements: "Disagreements",
+    crossValidation: "Cross-Validation",
+    recommendation: "Recommendation",
+    humanDecision: "Human Decision",
+    reviewPlan: "Review Plan",
+    reliability: "Reliability",
+    memoryCandidates: "Memory Candidates",
+    original: "Original",
+    refined: "Refined",
+    time: "Time",
+    leaning: "Leaning",
+    energy: "Energy",
+    notSet: "Not set",
+    pendingChair: "Pending Chair framing.",
+    noPriorMemory: "No prior memory matched this session.",
+    relevance: "relevance",
+    optionsPending: "Options will appear during evaluation.",
+    protocolPending: "Protocol will be selected when a session starts.",
+    council: "Council",
+    currentTurns: "Current turns",
+    evaluationPending: "Evaluation appears after options are available.",
+    weakest: "Weakest",
+    noWeakCriteria: "No weak criteria under current scores.",
+    noRisks: "No risks recorded yet.",
+    likelihood: "likelihood",
+    impact: "impact",
+    noEvidence: "No evidence recorded yet.",
+    disagreementPending: "Challenges and minority views will appear here.",
+    crossValidationPending: "Cross-validation has not been evaluated yet.",
+    triggered: "Triggered",
+    notTriggered: "Not triggered",
+    reasons: "Reasons",
+    status: "Status",
+    minorityOpinions: "Minority opinions",
+    none: "none",
+    noRecommendation: "No recommendation yet.",
+    confidence: "confidence",
+    nextAction: "Next action",
+    review: "Review",
+    noHumanDecision: "The user has not decided yet.",
+    noRationale: "No rationale provided.",
+    noReview: "No review scheduled yet.",
+    date: "Date",
+    trigger: "Trigger",
+    triggerBased: "Trigger-based",
+    reliabilityPending: "Reliability profile appears after agent runs.",
+    roles: "Roles",
+    models: "Models",
+    noMemoryCandidates: "No memory candidates yet.",
+    sensitivity: "sensitivity",
+    consentNeeded: "consent needed",
+    sessionRecord: "session record",
+    save: "Save",
+    reject: "Reject",
+    runningCouncil: "Running council",
+    meetingControls: "Meeting controls",
+    running: "Running...",
+    continue: "Continue",
+    autoRun: "Auto-run",
+    runCurrentPhase: "Run current phase",
+    challengeThis: "Challenge this",
+    generateRecommendation: "Generate recommendation",
+    exportReport: "Export report",
+    nextPhase: "Next phase",
+    evidencePlaceholder: "Evidence or source note...",
+    sourcePlaceholder: "Source...",
+    add: "Add",
+    optionalUrl: "Optional URL...",
+    askOrClarify: "Ask or clarify",
+    askRolePlaceholder: "Ask a role...",
+    ask: "Ask",
+    clarifyPlaceholder: "Clarify context...",
+    clarify: "Clarify",
+    choose: "Choose...",
+    modifyRecommendation: "Modify recommendation",
+    deferDecision: "Defer decision",
+    rejectAll: "Reject all",
+    rationalePlaceholder: "Rationale...",
+    decide: "Decide",
+    commitmentAndReview: "Commitment and review",
+    nextActionPlaceholder: "Next action...",
+    successCriteriaPlaceholder: "Success criteria...",
+    commit: "Commit",
+    reviewTriggerPlaceholder: "Review trigger...",
+    scheduleReview: "Schedule review",
+    retrospective: "Retrospective",
+    outcomePlaceholder: "Outcome summary...",
+    happenedPlaceholder: "What happened...",
+    assumptionUpdatesPlaceholder: "Assumption updates...",
+    lessonPlaceholder: "Lesson...",
+    complete: "Complete",
+    runStatusHint: "Calling the configured council routes. Real model calls can take a minute; keep this tab open.",
+    safetyBoundary: "Safety boundary",
+    emptyCouncilTitle: "Start with a real decision.",
+    emptyCouncilBody: "Private Council will structure the meeting, preserve disagreement, and build a decision record.",
+    emptyCanvasBody: "The canvas will collect options, criteria, claims, assumptions, risks, and review plans.",
+    startHint: "Create a session to unlock meeting actions.",
+    speaking: "speaking",
+    idle: "idle",
+    waiting: "waiting",
+    routePending: "model route pending",
+    advancingPhase: "Advancing one council phase",
+    autoRunningSequence: "Auto-running the council sequence",
+    runningCurrentPhase: "Running the current phase",
+    askingSkeptic: "Asking Skeptic to challenge the plan",
+    runningCrossValidation: "Running cross-validation",
+    generatingRecommendation: "Generating a recommendation",
+    askingRole: "Asking {role}",
+    selectedRole: "selected role",
+    tabCouncil: "Council",
+    tabCanvas: "Canvas",
+    tabDecision: "Decision",
+    apiUnavailable: "API server unavailable; using browser mock mode.",
+    checkingProvider: "Checking agent provider..."
+  },
+  zh: {
+    tagline: "结构化决策，不是无边界聊天。",
+    decisionQuestion: "决策问题",
+    decisionQuestionPlaceholder: "我应该辞职去做自己的 AI 产品吗？",
+    background: "背景",
+    backgroundPlaceholder: "哪些事情重要？发生了什么？目前有哪些选项？",
+    currentLeaning: "当前倾向",
+    currentLeaningPlaceholder: "我现在倾向于...",
+    timeHorizon: "时间范围",
+    timeHorizonPlaceholder: "2 周、6 个月...",
+    emotionalState: "情绪状态",
+    emotionalStatePlaceholder: "兴奋、焦虑、疲惫...",
+    constraints: "约束条件",
+    constraintsPlaceholder: "资金、时间、家庭、法律边界...",
+    startCouncil: "启动智囊团",
+    sessions: "历史会话",
+    dueReviews: "到期复盘",
+    memory: "记忆库",
+    delete: "删除",
+    noSessions: "还没有会话。",
+    noMemory: "还没有保存的记忆。",
+    modelsOnline: "模型在线",
+    modelStatus: "模型状态",
+    councilRoom: "智囊团会场",
+    transcript: "会议记录",
+    decisionCanvas: "决策画布",
+    traceableRecord: "可追溯记录",
+    decided: "已决策",
+    forming: "形成中",
+    problem: "问题",
+    retrievedMemory: "检索到的记忆",
+    protocol: "协议",
+    options: "选项",
+    criteria: "标准",
+    evaluation: "评估",
+    keyClaims: "关键主张",
+    noClaims: "还没有主张。",
+    assumptions: "假设",
+    noAssumptions: "还没有假设。",
+    risks: "风险",
+    evidence: "证据",
+    disagreements: "分歧",
+    crossValidation: "交叉验证",
+    recommendation: "建议",
+    humanDecision: "人工决策",
+    reviewPlan: "复盘计划",
+    reliability: "可靠性",
+    memoryCandidates: "记忆候选",
+    original: "原始问题",
+    refined: "重构问题",
+    time: "时间",
+    leaning: "倾向",
+    energy: "能量状态",
+    notSet: "未设置",
+    pendingChair: "等待 Chair 重构问题。",
+    noPriorMemory: "没有匹配到历史记忆。",
+    relevance: "相关度",
+    optionsPending: "选项会在评估阶段出现。",
+    protocolPending: "协议会在会话启动后选择。",
+    council: "参会角色",
+    currentTurns: "当前轮次",
+    evaluationPending: "有选项后会显示评估。",
+    weakest: "最弱项",
+    noWeakCriteria: "当前评分下没有明显弱项。",
+    noRisks: "还没有记录风险。",
+    likelihood: "可能性",
+    impact: "影响",
+    noEvidence: "还没有记录证据。",
+    disagreementPending: "挑战意见和少数观点会显示在这里。",
+    crossValidationPending: "还没有进行交叉验证。",
+    triggered: "已触发",
+    notTriggered: "未触发",
+    reasons: "原因",
+    status: "状态",
+    minorityOpinions: "少数意见",
+    none: "无",
+    noRecommendation: "还没有建议。",
+    confidence: "置信度",
+    nextAction: "下一步",
+    review: "复盘",
+    noHumanDecision: "用户还没有做出决策。",
+    noRationale: "没有填写理由。",
+    noReview: "还没有安排复盘。",
+    date: "日期",
+    trigger: "触发条件",
+    triggerBased: "按触发条件",
+    reliabilityPending: "角色运行后会显示可靠性画像。",
+    roles: "角色",
+    models: "模型",
+    noMemoryCandidates: "还没有记忆候选。",
+    sensitivity: "敏感度",
+    consentNeeded: "需要同意",
+    sessionRecord: "会话记录",
+    save: "保存",
+    reject: "拒绝",
+    runningCouncil: "智囊团运行中",
+    meetingControls: "会议控制",
+    running: "运行中...",
+    continue: "继续",
+    autoRun: "自动运行",
+    runCurrentPhase: "运行当前阶段",
+    challengeThis: "发起挑战",
+    generateRecommendation: "生成建议",
+    exportReport: "导出报告",
+    nextPhase: "下一阶段",
+    evidencePlaceholder: "证据或来源说明...",
+    sourcePlaceholder: "来源...",
+    add: "添加",
+    optionalUrl: "可选 URL...",
+    askOrClarify: "提问或补充",
+    askRolePlaceholder: "向某个角色提问...",
+    ask: "提问",
+    clarifyPlaceholder: "补充上下文...",
+    clarify: "补充",
+    choose: "选择...",
+    modifyRecommendation: "修改建议",
+    deferDecision: "暂缓决策",
+    rejectAll: "全部拒绝",
+    rationalePlaceholder: "决策理由...",
+    decide: "决策",
+    commitmentAndReview: "承诺与复盘",
+    nextActionPlaceholder: "下一步行动...",
+    successCriteriaPlaceholder: "成功标准...",
+    commit: "承诺",
+    reviewTriggerPlaceholder: "复盘触发条件...",
+    scheduleReview: "安排复盘",
+    retrospective: "复盘",
+    outcomePlaceholder: "结果摘要...",
+    happenedPlaceholder: "实际发生了什么...",
+    assumptionUpdatesPlaceholder: "假设更新...",
+    lessonPlaceholder: "经验教训...",
+    complete: "完成",
+    runStatusHint: "正在调用已配置的角色模型。真实模型可能需要一分钟，请保持页面打开。",
+    safetyBoundary: "安全边界",
+    emptyCouncilTitle: "从一个真实决策开始。",
+    emptyCouncilBody: "Private Council 会组织讨论、保留分歧，并生成可追溯的决策记录。",
+    emptyCanvasBody: "画布会收集选项、标准、主张、假设、风险和复盘计划。",
+    startHint: "创建会话后即可使用会议操作。",
+    speaking: "发言中",
+    idle: "空闲",
+    waiting: "等待中",
+    routePending: "等待模型路由",
+    advancingPhase: "正在推进一个会议阶段",
+    autoRunningSequence: "正在自动运行智囊团流程",
+    runningCurrentPhase: "正在运行当前阶段",
+    askingSkeptic: "正在让 Skeptic 挑战方案",
+    runningCrossValidation: "正在运行交叉验证",
+    generatingRecommendation: "正在生成建议",
+    askingRole: "正在询问 {role}",
+    selectedRole: "所选角色",
+    tabCouncil: "会场",
+    tabCanvas: "画布",
+    tabDecision: "决策",
+    apiUnavailable: "API 服务不可用；正在使用浏览器 mock 模式。",
+    checkingProvider: "正在检查模型服务..."
+  }
+};
+
+const PHASE_LABELS_BY_LOCALE = {
+  en: PHASE_LABELS,
+  zh: {
+    created: "已创建",
+    framing: "框定",
+    context_collection: "上下文",
+    independent_views: "观点",
+    challenge: "挑战",
+    evaluation: "评估",
+    recommendation: "建议",
+    human_decision: "决策",
+    commitment: "承诺",
+    scheduled_review: "复盘计划",
+    retrospective: "复盘",
+    closed: "已关闭"
+  }
+};
+
+const ROLE_LABELS_BY_LOCALE = {
+  zh: {
+    chair: { name: "主席", purpose: "保持会议结构，保留有价值的分歧。" },
+    strategist: { name: "战略家", purpose: "检验长期一致性和机会成本。" },
+    skeptic: { name: "怀疑者", purpose: "攻击薄弱假设和失败路径。" },
+    operator: { name: "执行官", purpose: "把判断转化为可执行的下一步。" },
+    researcher: { name: "研究员", purpose: "区分事实、假设和信息缺口。" },
+    user_advocate: { name: "用户代言人", purpose: "保护精力、价值观和现实约束。" },
+    reflector: { name: "复盘者", purpose: "在复盘时比较预测和结果。" }
+  }
+};
 
 const state = {
   sessions: [],
@@ -42,12 +391,14 @@ const state = {
     constraints: ""
   },
   ui: {
+    locale: initialLocale,
     loading: false,
+    loadingLabel: "",
     apiConfig: {
       available: false,
       provider: "mock",
       model: "mock-agent-v1",
-      message: "Checking agent provider..."
+      message: ""
     },
     safeRoute: null,
     askRoleId: "chair",
@@ -75,6 +426,37 @@ render();
 refreshSessions();
 refreshAgentConfig();
 refreshMemory();
+syncDocumentLanguage();
+
+function t(key, replacements = {}) {
+  const template = TEXT[state.ui.locale]?.[key] ?? TEXT.en[key] ?? key;
+  return Object.entries(replacements).reduce(
+    (value, [name, replacement]) => value.replaceAll(`{${name}}`, replacement),
+    template
+  );
+}
+
+function phaseLabel(phase) {
+  return PHASE_LABELS_BY_LOCALE[state.ui.locale]?.[phase] || PHASE_LABELS[phase] || phase;
+}
+
+function roleName(role) {
+  return ROLE_LABELS_BY_LOCALE[state.ui.locale]?.[role.id]?.name || role.name;
+}
+
+function rolePurpose(role) {
+  return ROLE_LABELS_BY_LOCALE[state.ui.locale]?.[role.id]?.purpose || role.purpose;
+}
+
+function syncDocumentLanguage() {
+  document.documentElement.lang = state.ui.locale === "zh" ? "zh-CN" : "en";
+}
+
+function translateApiMessage(message) {
+  if (!message) return t("checkingProvider");
+  if (message === "API server unavailable; using browser mock mode.") return t("apiUnavailable");
+  return message;
+}
 
 function getActiveSession() {
   return state.sessions.find((session) => session.id === state.activeId) || null;
@@ -92,8 +474,9 @@ function setSession(session) {
   render();
 }
 
-function setLoading(loading) {
+function setLoading(loading, label = "") {
   state.ui.loading = loading;
+  state.ui.loadingLabel = loading ? label : "";
   render();
 }
 
@@ -146,64 +529,77 @@ function renderSidebar(session) {
         <div class="mark">PC</div>
         <div>
           <h1>Private Council</h1>
-          <p>Structured decisions, not open-ended chat.</p>
+          <p>${t("tagline")}</p>
         </div>
       </div>
+      ${renderLanguageSwitch()}
 
       ${renderProviderStatus()}
 
       <form class="new-session" data-action="create-session">
         <label>
-          Decision question
-          <textarea name="question" rows="3" placeholder="Should I quit my job to work on my AI product?">${escapeHtml(state.draft.question)}</textarea>
+          ${t("decisionQuestion")}
+          <textarea name="question" rows="3" placeholder="${t("decisionQuestionPlaceholder")}">${escapeHtml(state.draft.question)}</textarea>
         </label>
         <label>
-          Background
-          <textarea name="background" rows="4" placeholder="What matters, what happened, and what options are visible?">${escapeHtml(state.draft.background)}</textarea>
+          ${t("background")}
+          <textarea name="background" rows="4" placeholder="${t("backgroundPlaceholder")}">${escapeHtml(state.draft.background)}</textarea>
         </label>
         <label>
-          Current leaning
-          <input name="currentLeaning" value="${escapeHtml(state.draft.currentLeaning)}" placeholder="I am leaning toward..." />
+          ${t("currentLeaning")}
+          <input name="currentLeaning" value="${escapeHtml(state.draft.currentLeaning)}" placeholder="${t("currentLeaningPlaceholder")}" />
         </label>
         <div class="field-grid">
           <label>
-            Time horizon
-            <input name="timeHorizon" value="${escapeHtml(state.draft.timeHorizon)}" placeholder="2 weeks, 6 months..." />
+            ${t("timeHorizon")}
+            <input name="timeHorizon" value="${escapeHtml(state.draft.timeHorizon)}" placeholder="${t("timeHorizonPlaceholder")}" />
           </label>
           <label>
-            Emotional state
-            <input name="emotionalState" value="${escapeHtml(state.draft.emotionalState)}" placeholder="Excited, anxious..." />
+            ${t("emotionalState")}
+            <input name="emotionalState" value="${escapeHtml(state.draft.emotionalState)}" placeholder="${t("emotionalStatePlaceholder")}" />
           </label>
         </div>
         <label>
-          Constraints
-          <textarea name="constraints" rows="2" placeholder="Money, time, family, legal boundaries...">${escapeHtml(state.draft.constraints)}</textarea>
+          ${t("constraints")}
+          <textarea name="constraints" rows="2" placeholder="${t("constraintsPlaceholder")}">${escapeHtml(state.draft.constraints)}</textarea>
         </label>
-        <button class="primary" type="submit">Start council</button>
+        <button class="primary" type="submit">${t("startCouncil")}</button>
       </form>
 
       ${state.ui.safeRoute ? renderSafeRoute(state.ui.safeRoute) : ""}
 
       <div class="session-list">
         ${renderDueReviews()}
-        <div class="section-title">Sessions</div>
+        <div class="section-title">${t("sessions")}</div>
         ${
           state.sessions.length
             ? state.sessions
                 .map(
                   (item) => `
-                    <button class="session-item ${session?.id === item.id ? "selected" : ""}" data-session-id="${item.id}">
-                      <span>${escapeHtml(item.title)}</span>
-                      <small>${PHASE_LABELS[item.currentPhase]} · ${escapeHtml(item.status)}</small>
-                    </button>
+                    <div class="session-row">
+                      <button class="session-item ${session?.id === item.id ? "selected" : ""}" data-session-id="${item.id}">
+                        <span>${escapeHtml(item.title)}</span>
+                        <small>${phaseLabel(item.currentPhase)} · ${escapeHtml(item.status)}</small>
+                      </button>
+                      <button class="icon-danger" title="${t("delete")}" data-action="delete-session" data-session-delete-id="${item.id}">${t("delete")}</button>
+                    </div>
                   `
                 )
                 .join("")
-            : `<p class="muted">No sessions yet.</p>`
+            : `<p class="muted">${t("noSessions")}</p>`
         }
       </div>
       ${renderMemoryLibrary()}
     </aside>
+  `;
+}
+
+function renderLanguageSwitch() {
+  return `
+    <div class="language-switch" aria-label="Language">
+      <button class="${state.ui.locale === "zh" ? "selected" : ""}" data-locale="zh">中文</button>
+      <button class="${state.ui.locale === "en" ? "selected" : ""}" data-locale="en">English</button>
+    </div>
   `;
 }
 
@@ -216,7 +612,7 @@ function renderDueReviews() {
   if (!due.length) return "";
   return `
     <div class="due-reviews">
-      <div class="section-title">Due Reviews</div>
+      <div class="section-title">${t("dueReviews")}</div>
       ${due
         .map(
           (session) => `
@@ -234,7 +630,7 @@ function renderDueReviews() {
 function renderMemoryLibrary() {
   return `
     <div class="memory-library">
-      <div class="section-title">Memory</div>
+      <div class="section-title">${t("memory")}</div>
       ${
         state.memories.length
           ? state.memories
@@ -244,12 +640,12 @@ function renderMemoryLibrary() {
                   <article class="memory-item">
                     <span>${escapeHtml(memory.text)}</span>
                     <small>${escapeHtml(memory.type)} · ${escapeHtml(memory.sensitivity)}</small>
-                    <button data-action="delete-memory" data-memory-id="${escapeHtml(memory.id)}">Delete</button>
+                    <button data-action="delete-memory" data-memory-id="${escapeHtml(memory.id)}">${t("delete")}</button>
                   </article>
                 `
               )
               .join("")
-          : `<p class="muted">No saved memory.</p>`
+          : `<p class="muted">${t("noMemory")}</p>`
       }
     </div>
   `;
@@ -260,22 +656,27 @@ function renderProviderStatus() {
   return `
     <div class="provider-status ${config.available ? "live" : ""}">
       <div>
-        <strong>${escapeHtml(config.provider)}</strong>
-        <span>${escapeHtml(config.model)}</span>
+        <strong>${escapeHtml(config.available ? t("modelsOnline") : t("modelStatus"))}</strong>
+        <span>${escapeHtml(config.provider)} · ${escapeHtml(config.model)}</span>
       </div>
-      <small>${escapeHtml(config.message)}</small>
+      <small>${escapeHtml(translateApiMessage(config.message))}</small>
     </div>
   `;
 }
 
 function renderMobileTabs() {
+  const tabs = [
+    ["council", t("tabCouncil")],
+    ["canvas", t("tabCanvas")],
+    ["decision", t("tabDecision")]
+  ];
   return `
     <nav class="mobile-tabs" aria-label="Workspace tabs">
-      ${["council", "canvas", "decision"]
+      ${tabs
         .map(
-          (tab) => `
+          ([tab, label]) => `
             <button class="${state.activeTab === tab ? "selected" : ""}" data-tab="${tab}">
-              ${capitalize(tab)}
+              ${label}
             </button>
           `
         )
@@ -288,17 +689,17 @@ function renderCouncil(session) {
   return `
     <div class="panel-header">
       <div>
-        <div class="eyebrow">Council Room</div>
+        <div class="eyebrow">${t("councilRoom")}</div>
         <h2>${escapeHtml(session.title)}</h2>
       </div>
-      <span class="status-pill">${PHASE_LABELS[session.currentPhase]}</span>
+      <span class="status-pill">${phaseLabel(session.currentPhase)}</span>
     </div>
     ${renderPhaseRail(session)}
     <div class="role-grid">
       ${COUNCIL_ROLES.map((role) => renderRoleCard(role, session)).join("")}
     </div>
     <div class="transcript">
-      <div class="section-title">Transcript</div>
+      <div class="section-title">${t("transcript")}</div>
       ${session.transcript
         .slice()
         .reverse()
@@ -316,7 +717,7 @@ function renderPhaseRail(session) {
         .map((phase) => {
           const index = SESSION_PHASES.indexOf(phase);
           const className = index < currentIndex ? "done" : index === currentIndex ? "current" : "";
-          return `<li class="${className}"><span></span>${PHASE_LABELS[phase]}</li>`;
+          return `<li class="${className}"><span></span>${phaseLabel(phase)}</li>`;
         })
         .join("")}
     </ol>
@@ -329,18 +730,19 @@ function renderRoleCard(role, session) {
     .reverse()
     .find((run) => run.roleId === role.id);
   const active = session.transcript[session.transcript.length - 1]?.roleId === role.id;
-  const stateLabel = active ? "speaking" : lastRun ? "idle" : "waiting";
+  const stateLabel = active ? t("speaking") : lastRun ? t("idle") : t("waiting");
+  const routeLabel = lastRun?.provider && lastRun?.model ? `${lastRun.provider} / ${lastRun.model}` : t("routePending");
 
   return `
-    <article class="role-card ${active ? "active" : ""}">
+    <article class="role-card ${active ? "active" : ""}" data-role="${role.id}">
       <div class="role-top">
         <span class="avatar ${role.color}">${role.name.slice(0, 1)}</span>
         <div>
-          <h3>${role.name}</h3>
-          <small>${stateLabel}</small>
+          <h3>${roleName(role)}</h3>
+          <small>${stateLabel} · ${escapeHtml(routeLabel)}</small>
         </div>
       </div>
-      <p>${escapeHtml(lastRun?.output.summary || role.purpose)}</p>
+      <p>${escapeHtml(lastRun?.output.summary || rolePurpose(role))}</p>
     </article>
   `;
 }
@@ -351,10 +753,10 @@ function renderMessage(message) {
     <article class="message ${message.roleId === "user" ? "from-user" : ""}">
       <div class="message-meta">
         <strong>${escapeHtml(message.speaker)}</strong>
-        <span>${PHASE_LABELS[message.phase] || message.phase}</span>
+        <span>${phaseLabel(message.phase)}</span>
       </div>
       <p>${escapeHtml(message.content)}</p>
-      ${role ? `<small>${escapeHtml(role.purpose)}</small>` : ""}
+      ${role ? `<small>${escapeHtml(rolePurpose(role))}</small>` : ""}
     </article>
   `;
 }
@@ -365,29 +767,29 @@ function renderCanvas(session) {
   return `
     <div class="panel-header">
       <div>
-        <div class="eyebrow">Decision Canvas</div>
-        <h2>Traceable record</h2>
+        <div class="eyebrow">${t("decisionCanvas")}</div>
+        <h2>${t("traceableRecord")}</h2>
       </div>
-      <span class="status-pill">${canvas.humanDecision ? "decided" : "forming"}</span>
+      <span class="status-pill">${canvas.humanDecision ? t("decided") : t("forming")}</span>
     </div>
 
-    ${renderCanvasSection("Problem", renderProblem(canvas))}
-    ${renderCanvasSection("Retrieved Memory", renderRetrievedMemory(canvas.retrievedMemory))}
-    ${renderCanvasSection("Protocol", renderProtocol(canvas))}
-    ${renderCanvasSection("Options", renderOptions(rankedOptions))}
-    ${renderCanvasSection("Criteria", renderCriteria(canvas.criteria))}
-    ${renderCanvasSection("Evaluation", renderEvaluation(canvas.evaluation))}
-    ${renderCanvasSection("Key Claims", renderList(canvas.claims.slice(-8), "text", "No claims yet."))}
-    ${renderCanvasSection("Assumptions", renderList(canvas.assumptions.slice(-8), "text", "No assumptions yet."))}
-    ${renderCanvasSection("Risks", renderRisks(canvas.risks.slice(-8)))}
-    ${renderCanvasSection("Evidence", renderEvidence(canvas.evidence))}
-    ${renderCanvasSection("Disagreements", renderDisagreements(canvas))}
-    ${renderCanvasSection("Cross-Validation", renderCrossValidation(canvas))}
-    ${renderCanvasSection("Recommendation", renderRecommendation(canvas.recommendation))}
-    ${renderCanvasSection("Human Decision", renderHumanDecision(canvas.humanDecision))}
-    ${renderCanvasSection("Review Plan", renderReviewPlan(canvas.reviewPlan))}
-    ${renderCanvasSection("Reliability", renderReliability(canvas.reliabilityProfile))}
-    ${renderCanvasSection("Memory Candidates", renderMemoryCandidates(canvas.memoryCandidates))}
+    ${renderCanvasSection(t("problem"), renderProblem(canvas))}
+    ${renderCanvasSection(t("retrievedMemory"), renderRetrievedMemory(canvas.retrievedMemory))}
+    ${renderCanvasSection(t("protocol"), renderProtocol(canvas))}
+    ${renderCanvasSection(t("options"), renderOptions(rankedOptions))}
+    ${renderCanvasSection(t("criteria"), renderCriteria(canvas.criteria))}
+    ${renderCanvasSection(t("evaluation"), renderEvaluation(canvas.evaluation))}
+    ${renderCanvasSection(t("keyClaims"), renderList(canvas.claims.slice(-8), "text", t("noClaims")))}
+    ${renderCanvasSection(t("assumptions"), renderList(canvas.assumptions.slice(-8), "text", t("noAssumptions")))}
+    ${renderCanvasSection(t("risks"), renderRisks(canvas.risks.slice(-8)))}
+    ${renderCanvasSection(t("evidence"), renderEvidence(canvas.evidence))}
+    ${renderCanvasSection(t("disagreements"), renderDisagreements(canvas))}
+    ${renderCanvasSection(t("crossValidation"), renderCrossValidation(canvas))}
+    ${renderCanvasSection(t("recommendation"), renderRecommendation(canvas.recommendation))}
+    ${renderCanvasSection(t("humanDecision"), renderHumanDecision(canvas.humanDecision))}
+    ${renderCanvasSection(t("reviewPlan"), renderReviewPlan(canvas.reviewPlan))}
+    ${renderCanvasSection(t("reliability"), renderReliability(canvas.reliabilityProfile))}
+    ${renderCanvasSection(t("memoryCandidates"), renderMemoryCandidates(canvas.memoryCandidates))}
   `;
 }
 
@@ -403,17 +805,17 @@ function renderCanvasSection(title, body) {
 function renderProblem(canvas) {
   return `
     <div class="stack">
-      <p><strong>Original:</strong> ${escapeHtml(canvas.problem.originalQuestion)}</p>
-      <p><strong>Refined:</strong> ${escapeHtml(canvas.problem.refinedQuestion || "Pending Chair framing.")}</p>
-      <p><strong>Time:</strong> ${escapeHtml(canvas.problem.timeHorizon || "Not set")}</p>
-      <p><strong>Leaning:</strong> ${escapeHtml(canvas.context.currentLeaning || "Not set")}</p>
-      <p><strong>Energy:</strong> ${escapeHtml(canvas.emotionalContext?.state || "Not set")}</p>
+      <p><strong>${t("original")}:</strong> ${escapeHtml(canvas.problem.originalQuestion)}</p>
+      <p><strong>${t("refined")}:</strong> ${escapeHtml(canvas.problem.refinedQuestion || t("pendingChair"))}</p>
+      <p><strong>${t("time")}:</strong> ${escapeHtml(canvas.problem.timeHorizon || t("notSet"))}</p>
+      <p><strong>${t("leaning")}:</strong> ${escapeHtml(canvas.context.currentLeaning || t("notSet"))}</p>
+      <p><strong>${t("energy")}:</strong> ${escapeHtml(canvas.emotionalContext?.state || t("notSet"))}</p>
     </div>
   `;
 }
 
 function renderRetrievedMemory(memories) {
-  if (!memories?.length) return `<p class="muted">No prior memory matched this session.</p>`;
+  if (!memories?.length) return `<p class="muted">${t("noPriorMemory")}</p>`;
   return `
     <ul class="dense-list">
       ${memories
@@ -421,7 +823,7 @@ function renderRetrievedMemory(memories) {
           (memory) => `
             <li>
               <span>${escapeHtml(memory.text)}</span>
-              <small>${escapeHtml(memory.type)} · relevance ${escapeHtml(memory.relevance)}</small>
+              <small>${escapeHtml(memory.type)} · ${t("relevance")} ${escapeHtml(memory.relevance)}</small>
             </li>
           `
         )
@@ -431,7 +833,7 @@ function renderRetrievedMemory(memories) {
 }
 
 function renderOptions(rankedOptions) {
-  if (!rankedOptions.length) return `<p class="muted">Options will appear during evaluation.</p>`;
+  if (!rankedOptions.length) return `<p class="muted">${t("optionsPending")}</p>`;
   return `
     <div class="option-list">
       ${rankedOptions
@@ -454,13 +856,13 @@ function renderOptions(rankedOptions) {
 function renderProtocol(canvas) {
   const route = canvas.protocolRoute;
   const allocation = canvas.turnAllocation;
-  if (!route) return `<p class="muted">Protocol will be selected when a session starts.</p>`;
+  if (!route) return `<p class="muted">${t("protocolPending")}</p>`;
   return `
     <div class="stack">
       <p><strong>${escapeHtml(route.decisionType)}</strong> · ${escapeHtml(route.protocol)}</p>
       <p>${escapeHtml(route.rationale)}</p>
-      <p><strong>Council:</strong> ${escapeHtml((route.councilComposition || []).join(", "))}</p>
-      ${allocation ? `<p><strong>Current turns:</strong> ${escapeHtml(allocation.roleIds.join(", "))}</p>` : ""}
+      <p><strong>${t("council")}:</strong> ${escapeHtml((route.councilComposition || []).join(", "))}</p>
+      ${allocation ? `<p><strong>${t("currentTurns")}:</strong> ${escapeHtml(allocation.roleIds.join(", "))}</p>` : ""}
     </div>
   `;
 }
@@ -484,7 +886,7 @@ function renderCriteria(criteria) {
 }
 
 function renderEvaluation(evaluation) {
-  if (!evaluation?.rows?.length) return `<p class="muted">Evaluation appears after options are available.</p>`;
+  if (!evaluation?.rows?.length) return `<p class="muted">${t("evaluationPending")}</p>`;
   return `
     <div class="option-list">
       ${evaluation.rows
@@ -493,7 +895,7 @@ function renderEvaluation(evaluation) {
             <article class="option-row">
               <div>
                 <strong>${escapeHtml(row.optionTitle)}</strong>
-                <p>${escapeHtml(row.weakestCriteria.length ? `Weakest: ${row.weakestCriteria.join(", ")}` : "No weak criteria under current scores.")}</p>
+                <p>${escapeHtml(row.weakestCriteria.length ? `${t("weakest")}: ${row.weakestCriteria.join(", ")}` : t("noWeakCriteria"))}</p>
               </div>
               <span>${row.normalizedScore}</span>
             </article>
@@ -506,7 +908,7 @@ function renderEvaluation(evaluation) {
 }
 
 function renderRisks(risks) {
-  if (!risks.length) return `<p class="muted">No risks recorded yet.</p>`;
+  if (!risks.length) return `<p class="muted">${t("noRisks")}</p>`;
   return `
     <ul class="dense-list">
       ${risks
@@ -514,7 +916,7 @@ function renderRisks(risks) {
           (risk) => `
             <li>
               <span>${escapeHtml(risk.text)}</span>
-              <small>${escapeHtml(risk.likelihood)} likelihood · ${escapeHtml(risk.impact)} impact</small>
+              <small>${escapeHtml(risk.likelihood)} ${t("likelihood")} · ${escapeHtml(risk.impact)} ${t("impact")}</small>
             </li>
           `
         )
@@ -524,7 +926,7 @@ function renderRisks(risks) {
 }
 
 function renderEvidence(evidence) {
-  if (!evidence?.length) return `<p class="muted">No evidence recorded yet.</p>`;
+  if (!evidence?.length) return `<p class="muted">${t("noEvidence")}</p>`;
   return `
     <ul class="dense-list">
       ${evidence
@@ -544,68 +946,68 @@ function renderEvidence(evidence) {
 
 function renderDisagreements(canvas) {
   const panel = canvas.disagreementPanel || canvas.claims.filter((claim) => claim.stance === "challenge" || claim.stance === "caution");
-  return renderList(panel.slice(-6), "text", "Challenges and minority views will appear here.");
+  return renderList(panel.slice(-6), "text", t("disagreementPending"));
 }
 
 function renderCrossValidation(canvas) {
   const trigger = canvas.crossValidationTrigger;
   const result = canvas.crossValidationResult;
-  if (!trigger) return `<p class="muted">Cross-validation has not been evaluated yet.</p>`;
+  if (!trigger) return `<p class="muted">${t("crossValidationPending")}</p>`;
   return `
     <div class="stack">
-      <p><strong>${trigger.shouldValidate ? "Triggered" : "Not triggered"}</strong> · ${escapeHtml(trigger.severity)}</p>
-      <p><strong>Reasons:</strong> ${escapeHtml(trigger.reasons?.join(", ") || "none")}</p>
-      <p><strong>Status:</strong> ${escapeHtml(result?.status || "pending")}</p>
-      <p><strong>Minority opinions:</strong> ${escapeHtml(result?.minorityOpinions?.join(" | ") || "none")}</p>
+      <p><strong>${trigger.shouldValidate ? t("triggered") : t("notTriggered")}</strong> · ${escapeHtml(trigger.severity)}</p>
+      <p><strong>${t("reasons")}:</strong> ${escapeHtml(trigger.reasons?.join(", ") || t("none"))}</p>
+      <p><strong>${t("status")}:</strong> ${escapeHtml(result?.status || "pending")}</p>
+      <p><strong>${t("minorityOpinions")}:</strong> ${escapeHtml(result?.minorityOpinions?.join(" | ") || t("none"))}</p>
     </div>
   `;
 }
 
 function renderRecommendation(recommendation) {
-  if (!recommendation) return `<p class="muted">No recommendation yet.</p>`;
+  if (!recommendation) return `<p class="muted">${t("noRecommendation")}</p>`;
   return `
     <div class="stack">
-      <p><strong>${escapeHtml(recommendation.optionTitle)}</strong> · ${escapeHtml(recommendation.confidence)} confidence</p>
+      <p><strong>${escapeHtml(recommendation.optionTitle)}</strong> · ${escapeHtml(recommendation.confidence)} ${t("confidence")}</p>
       <p>${escapeHtml(recommendation.rationale)}</p>
-      <p><strong>Next action:</strong> ${escapeHtml(recommendation.minimumNextAction)}</p>
-      <p><strong>Review:</strong> ${escapeHtml(recommendation.reviewTiming)}</p>
+      <p><strong>${t("nextAction")}:</strong> ${escapeHtml(recommendation.minimumNextAction)}</p>
+      <p><strong>${t("review")}:</strong> ${escapeHtml(recommendation.reviewTiming)}</p>
     </div>
   `;
 }
 
 function renderHumanDecision(decision) {
-  if (!decision) return `<p class="muted">The user has not decided yet.</p>`;
+  if (!decision) return `<p class="muted">${t("noHumanDecision")}</p>`;
   return `
     <div class="stack">
       <p><strong>${escapeHtml(decision.label)}</strong></p>
-      <p>${escapeHtml(decision.rationale || "No rationale provided.")}</p>
+      <p>${escapeHtml(decision.rationale || t("noRationale"))}</p>
     </div>
   `;
 }
 
 function renderReviewPlan(reviewPlan) {
-  if (!reviewPlan) return `<p class="muted">No review scheduled yet.</p>`;
+  if (!reviewPlan) return `<p class="muted">${t("noReview")}</p>`;
   return `
     <div class="stack">
-      <p><strong>Date:</strong> ${escapeHtml(reviewPlan.reviewDate || "Trigger-based")}</p>
-      <p><strong>Trigger:</strong> ${escapeHtml(reviewPlan.trigger || "Not set")}</p>
+      <p><strong>${t("date")}:</strong> ${escapeHtml(reviewPlan.reviewDate || t("triggerBased"))}</p>
+      <p><strong>${t("trigger")}:</strong> ${escapeHtml(reviewPlan.trigger || t("notSet"))}</p>
     </div>
   `;
 }
 
 function renderReliability(profile) {
-  if (!profile) return `<p class="muted">Reliability profile appears after agent runs.</p>`;
+  if (!profile) return `<p class="muted">${t("reliabilityPending")}</p>`;
   return `
     <div class="stack">
       <p>${escapeHtml(profile.note)}</p>
-      <p><strong>Roles:</strong> ${escapeHtml((profile.roles || []).map((role) => `${role.id}:${role.runs}`).join(", ") || "none")}</p>
-      <p><strong>Models:</strong> ${escapeHtml((profile.models || []).map((model) => `${model.id}:${model.runs}`).join(", ") || "none")}</p>
+      <p><strong>${t("roles")}:</strong> ${escapeHtml((profile.roles || []).map((role) => `${role.id}:${role.runs}`).join(", ") || t("none"))}</p>
+      <p><strong>${t("models")}:</strong> ${escapeHtml((profile.models || []).map((model) => `${model.id}:${model.runs}`).join(", ") || t("none"))}</p>
     </div>
   `;
 }
 
 function renderMemoryCandidates(items) {
-  if (!items?.length) return `<p class="muted">No memory candidates yet.</p>`;
+  if (!items?.length) return `<p class="muted">${t("noMemoryCandidates")}</p>`;
   return `
     <ul class="dense-list">
       ${items
@@ -613,10 +1015,10 @@ function renderMemoryCandidates(items) {
           (item) => `
             <li>
               <span>${escapeHtml(item.text)}</span>
-              <small>${escapeHtml(item.type)} · ${escapeHtml(item.sensitivity)} sensitivity · ${item.requiresConsent ? "consent needed" : "session record"}</small>
+              <small>${escapeHtml(item.type)} · ${escapeHtml(item.sensitivity)} ${t("sensitivity")} · ${item.requiresConsent ? t("consentNeeded") : t("sessionRecord")}</small>
               <div class="button-row">
-                <button data-action="memory-accept" data-memory-id="${escapeHtml(item.id)}">Save</button>
-                <button data-action="memory-reject" data-memory-id="${escapeHtml(item.id)}">Reject</button>
+                <button data-action="memory-accept" data-memory-id="${escapeHtml(item.id)}">${t("save")}</button>
+                <button data-action="memory-reject" data-memory-id="${escapeHtml(item.id)}">${t("reject")}</button>
               </div>
             </li>
           `
@@ -628,99 +1030,118 @@ function renderMemoryCandidates(items) {
 
 function renderActions(session) {
   const recommendation = session.canvas.recommendation;
+  const loadingLabel = state.ui.loadingLabel || t("runningCouncil");
   const choices = session.canvas.options
     .map((option) => `<option value="${option.id}">${escapeHtml(option.title)}</option>`)
     .join("");
   return `
+    ${state.ui.loading ? renderRunStatus(loadingLabel) : ""}
     <div class="dock-grid">
       <section class="dock-card">
-        <div class="section-title">Meeting controls</div>
+        <div class="section-title">${t("meetingControls")}</div>
         <div class="button-row">
-          <button class="primary" data-action="continue" ${state.ui.loading ? "disabled" : ""}>${state.ui.loading ? "Working..." : "Continue"}</button>
-          <button data-action="run-phase" ${state.ui.loading ? "disabled" : ""}>Run current phase</button>
-          <button data-action="challenge" ${state.ui.loading ? "disabled" : ""}>Challenge this</button>
-          <button data-action="cross-validate" ${state.ui.loading ? "disabled" : ""}>Cross-validate</button>
-          <button data-action="recommend" ${state.ui.loading ? "disabled" : ""}>Generate recommendation</button>
-          <a class="button-link" href="${reportUrl(session)}" target="_blank" rel="noreferrer">Export report</a>
+          <button class="primary" data-action="continue" ${state.ui.loading ? "disabled" : ""}>${state.ui.loading ? t("running") : t("continue")}</button>
+          <button class="auto-run-button" data-action="auto-run" ${state.ui.loading ? "disabled" : ""}>${t("autoRun")}</button>
+          <button data-action="run-phase" ${state.ui.loading ? "disabled" : ""}>${t("runCurrentPhase")}</button>
+          <button data-action="challenge" ${state.ui.loading ? "disabled" : ""}>${t("challengeThis")}</button>
+          <button data-action="cross-validate" ${state.ui.loading ? "disabled" : ""}>${t("crossValidation")}</button>
+          <button data-action="recommend" ${state.ui.loading ? "disabled" : ""}>${t("generateRecommendation")}</button>
+          <a class="button-link" href="${reportUrl(session)}" target="_blank" rel="noreferrer">${t("exportReport")}</a>
         </div>
-        <p class="muted">Next phase: ${PHASE_LABELS[nextPhase(session.currentPhase)]}</p>
+        <p class="muted">${t("nextPhase")}: ${phaseLabel(nextPhase(session.currentPhase))}</p>
       </section>
 
       <section class="dock-card">
-        <div class="section-title">Evidence</div>
+        <div class="section-title">${t("evidence")}</div>
         <div class="inline-form">
-          <input data-field="evidenceText" value="${escapeHtml(state.ui.evidenceText)}" placeholder="Evidence or source note..." />
-          <input data-field="evidenceSource" value="${escapeHtml(state.ui.evidenceSource)}" placeholder="Source..." />
+          <input data-field="evidenceText" value="${escapeHtml(state.ui.evidenceText)}" placeholder="${t("evidencePlaceholder")}" />
+          <input data-field="evidenceSource" value="${escapeHtml(state.ui.evidenceSource)}" placeholder="${t("sourcePlaceholder")}" />
           <select data-field="evidenceQuality">
             ${["low", "medium", "high"].map((quality) => `<option value="${quality}" ${state.ui.evidenceQuality === quality ? "selected" : ""}>${quality}</option>`).join("")}
           </select>
-          <button data-action="add-evidence">Add</button>
+          <button data-action="add-evidence">${t("add")}</button>
         </div>
-        <input data-field="evidenceUrl" value="${escapeHtml(state.ui.evidenceUrl)}" placeholder="Optional URL..." />
+        <input data-field="evidenceUrl" value="${escapeHtml(state.ui.evidenceUrl)}" placeholder="${t("optionalUrl")}" />
       </section>
 
       <section class="dock-card">
-        <div class="section-title">Ask or clarify</div>
+        <div class="section-title">${t("askOrClarify")}</div>
         <div class="inline-form">
           <select data-field="askRoleId">
             ${COUNCIL_ROLES.filter((role) => role.id !== "reflector")
               .map(
                 (role) =>
-                  `<option value="${role.id}" ${state.ui.askRoleId === role.id ? "selected" : ""}>${role.name}</option>`
+                  `<option value="${role.id}" ${state.ui.askRoleId === role.id ? "selected" : ""}>${roleName(role)}</option>`
               )
               .join("")}
           </select>
-          <input data-field="askPrompt" value="${escapeHtml(state.ui.askPrompt)}" placeholder="Ask a role..." />
-          <button data-action="ask-role" ${state.ui.loading ? "disabled" : ""}>Ask</button>
+          <input data-field="askPrompt" value="${escapeHtml(state.ui.askPrompt)}" placeholder="${t("askRolePlaceholder")}" />
+          <button data-action="ask-role" ${state.ui.loading ? "disabled" : ""}>${t("ask")}</button>
         </div>
         <div class="inline-form">
-          <input data-field="clarifyText" value="${escapeHtml(state.ui.clarifyText)}" placeholder="Clarify context..." />
-          <button data-action="clarify">Clarify</button>
+          <input data-field="clarifyText" value="${escapeHtml(state.ui.clarifyText)}" placeholder="${t("clarifyPlaceholder")}" />
+          <button data-action="clarify">${t("clarify")}</button>
         </div>
       </section>
 
       <section class="dock-card">
-        <div class="section-title">Human decision</div>
+        <div class="section-title">${t("humanDecision")}</div>
         <div class="inline-form">
           <select data-field="decisionChoice">
-            <option value="">Choose...</option>
+            <option value="">${t("choose")}</option>
             ${choices}
-            <option value="modify">Modify recommendation</option>
-            <option value="defer">Defer decision</option>
-            <option value="reject">Reject all</option>
+            <option value="modify">${t("modifyRecommendation")}</option>
+            <option value="defer">${t("deferDecision")}</option>
+            <option value="reject">${t("rejectAll")}</option>
           </select>
-          <input data-field="decisionRationale" value="${escapeHtml(state.ui.decisionRationale)}" placeholder="Rationale..." />
-          <button data-action="decide" ${recommendation || session.canvas.options.length ? "" : "disabled"}>Decide</button>
+          <input data-field="decisionRationale" value="${escapeHtml(state.ui.decisionRationale)}" placeholder="${t("rationalePlaceholder")}" />
+          <button data-action="decide" ${recommendation || session.canvas.options.length ? "" : "disabled"}>${t("decide")}</button>
         </div>
       </section>
 
       <section class="dock-card">
-        <div class="section-title">Commitment and review</div>
+        <div class="section-title">${t("commitmentAndReview")}</div>
         <div class="inline-form">
-          <input data-field="commitmentAction" value="${escapeHtml(state.ui.commitmentAction)}" placeholder="Next action..." />
-          <input data-field="commitmentSuccess" value="${escapeHtml(state.ui.commitmentSuccess)}" placeholder="Success criteria..." />
+          <input data-field="commitmentAction" value="${escapeHtml(state.ui.commitmentAction)}" placeholder="${t("nextActionPlaceholder")}" />
+          <input data-field="commitmentSuccess" value="${escapeHtml(state.ui.commitmentSuccess)}" placeholder="${t("successCriteriaPlaceholder")}" />
           <input data-field="commitmentDue" type="date" value="${escapeHtml(state.ui.commitmentDue)}" />
-          <button data-action="commit">Commit</button>
+          <button data-action="commit">${t("commit")}</button>
         </div>
         <div class="inline-form">
           <input data-field="reviewDate" type="date" value="${escapeHtml(state.ui.reviewDate)}" />
-          <input data-field="reviewTrigger" value="${escapeHtml(state.ui.reviewTrigger)}" placeholder="Review trigger..." />
-          <button data-action="schedule-review">Schedule review</button>
+          <input data-field="reviewTrigger" value="${escapeHtml(state.ui.reviewTrigger)}" placeholder="${t("reviewTriggerPlaceholder")}" />
+          <button data-action="schedule-review">${t("scheduleReview")}</button>
         </div>
       </section>
 
       <section class="dock-card">
-        <div class="section-title">Retrospective</div>
+        <div class="section-title">${t("retrospective")}</div>
         <div class="inline-form">
-          <input data-field="retrospectiveOutcome" value="${escapeHtml(state.ui.retrospectiveOutcome)}" placeholder="Outcome summary..." />
-          <input data-field="retrospectiveHappened" value="${escapeHtml(state.ui.retrospectiveHappened)}" placeholder="What happened..." />
+          <input data-field="retrospectiveOutcome" value="${escapeHtml(state.ui.retrospectiveOutcome)}" placeholder="${t("outcomePlaceholder")}" />
+          <input data-field="retrospectiveHappened" value="${escapeHtml(state.ui.retrospectiveHappened)}" placeholder="${t("happenedPlaceholder")}" />
         </div>
         <div class="inline-form">
-          <input data-field="retrospectiveAssumptions" value="${escapeHtml(state.ui.retrospectiveAssumptions)}" placeholder="Assumption updates..." />
-          <input data-field="retrospectiveLesson" value="${escapeHtml(state.ui.retrospectiveLesson)}" placeholder="Lesson..." />
-          <button data-action="complete-retrospective">Complete</button>
+          <input data-field="retrospectiveAssumptions" value="${escapeHtml(state.ui.retrospectiveAssumptions)}" placeholder="${t("assumptionUpdatesPlaceholder")}" />
+          <input data-field="retrospectiveLesson" value="${escapeHtml(state.ui.retrospectiveLesson)}" placeholder="${t("lessonPlaceholder")}" />
+          <button data-action="complete-retrospective">${t("complete")}</button>
         </div>
       </section>
+    </div>
+  `;
+}
+
+function renderRunStatus(label) {
+  return `
+    <div class="run-status" role="status" aria-live="polite">
+      <div class="run-orbit" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div>
+        <strong>${escapeHtml(label)}</strong>
+        <small>${t("runStatusHint")}</small>
+      </div>
     </div>
   `;
 }
@@ -728,7 +1149,7 @@ function renderActions(session) {
 function renderSafeRoute(risk) {
   return `
     <div class="safe-route">
-      <strong>Safety boundary: ${escapeHtml(risk.category)}</strong>
+      <strong>${t("safetyBoundary")}: ${escapeHtml(risk.category)}</strong>
       <p>${escapeHtml(risk.message)}</p>
     </div>
   `;
@@ -737,8 +1158,8 @@ function renderSafeRoute(risk) {
 function renderEmptyCouncil() {
   return `
     <div class="empty-state">
-      <h2>Start with a real decision.</h2>
-      <p>Private Council will structure the meeting, preserve disagreement, and build a decision record.</p>
+      <h2>${t("emptyCouncilTitle")}</h2>
+      <p>${t("emptyCouncilBody")}</p>
     </div>
   `;
 }
@@ -746,14 +1167,14 @@ function renderEmptyCouncil() {
 function renderEmptyCanvas() {
   return `
     <div class="empty-state">
-      <h2>Decision Canvas</h2>
-      <p>The canvas will collect options, criteria, claims, assumptions, risks, and review plans.</p>
+      <h2>${t("decisionCanvas")}</h2>
+      <p>${t("emptyCanvasBody")}</p>
     </div>
   `;
 }
 
 function renderStartHint() {
-  return `<p class="muted">Create a session to unlock meeting actions.</p>`;
+  return `<p class="muted">${t("startHint")}</p>`;
 }
 
 function renderList(items, key, empty) {
@@ -787,7 +1208,7 @@ function bindEvents() {
   });
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const result = await createServerSession(state.draft);
+    const result = await createServerSession({ ...state.draft, locale: state.ui.locale });
     if (result.blocked) {
       state.ui.safeRoute = result.risk;
       render();
@@ -812,6 +1233,15 @@ function bindEvents() {
     });
   });
 
+  document.querySelectorAll("[data-locale]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.ui.locale = button.dataset.locale;
+      localStorage.setItem("privateCouncil.locale", state.ui.locale);
+      syncDocumentLanguage();
+      render();
+    });
+  });
+
   document.querySelectorAll("[data-criterion-id]").forEach((input) => {
     input.addEventListener("input", async () => {
       const session = getActiveSession();
@@ -827,44 +1257,69 @@ function bindEvents() {
 
 async function handleAction(action) {
   const session = getActiveSession();
+
+  if (action === "delete-session") {
+    const button = document.activeElement;
+    const sessionId = button?.dataset?.sessionDeleteId;
+    if (!sessionId) return;
+    const result = await deleteServerSession(sessionId);
+    if (result.deleted) {
+      state.sessions = state.sessions.filter((item) => item.id !== sessionId);
+      if (state.activeId === sessionId) {
+        state.activeId = state.sessions[0]?.id || null;
+      }
+      render();
+    }
+    return;
+  }
+
   if (!session) return;
 
   if (action === "continue") {
-    await runAsync(() => advanceServerSession(session));
+    await runAsync(() => advanceServerSession(sessionForRequest(session)), t("advancingPhase"));
+    return;
+  }
+
+  if (action === "auto-run") {
+    await runAsync(() => autoRunServerSession(sessionForRequest(session)), t("autoRunningSequence"));
     return;
   }
 
   if (action === "run-phase") {
-    await runAsync(() => runServerPhase(session));
+    await runAsync(() => runServerPhase(sessionForRequest(session)), t("runningCurrentPhase"));
     return;
   }
 
   if (action === "challenge") {
-    await runAsync(() => askServerRole(session, "skeptic", "Challenge the strongest current option."));
+    await runAsync(() => askServerRole(sessionForRequest(session), "skeptic", "Challenge the strongest current option."), t("askingSkeptic"));
     return;
   }
 
   if (action === "cross-validate") {
-    await runAsync(() => crossValidateServerSession(session));
+    await runAsync(() => crossValidateServerSession(sessionForRequest(session)), t("runningCrossValidation"));
     return;
   }
 
   if (action === "recommend") {
     await runAsync(async () => {
-      let next = session;
+      let next = sessionForRequest(session);
       while (!["recommendation", "human_decision", "commitment", "scheduled_review"].includes(next.currentPhase)) {
-        next = await advanceServerSession(next);
+        next = await advanceServerSession(sessionForRequest(next));
       }
-      if (next.currentPhase === "recommendation") next = await advanceServerSession(next);
+      if (next.currentPhase === "recommendation") next = await advanceServerSession(sessionForRequest(next));
       return next;
-    });
+    }, t("generatingRecommendation"));
     return;
   }
 
   if (action === "ask-role") {
     const prompt = state.ui.askPrompt.trim();
     if (prompt) {
-      await runAsync(() => askServerRole(session, state.ui.askRoleId, prompt));
+      const role = COUNCIL_ROLES.find((item) => item.id === state.ui.askRoleId);
+      await runAsync(
+        () => askServerRole(sessionForRequest(session), state.ui.askRoleId, prompt),
+        t("askingRole", { role: role ? roleName(role) : t("selectedRole") })
+      );
       state.ui.askPrompt = "";
     }
     return;
@@ -978,20 +1433,20 @@ async function handleAction(action) {
   }
 }
 
-async function runAsync(operation) {
+async function runAsync(operation, label = "Running council") {
   if (state.ui.loading) return;
-  setLoading(true);
+  setLoading(true, label);
   try {
     const session = await operation();
     setSession(session);
   } finally {
-    state.ui.loading = false;
+    setLoading(false);
     await refreshAgentConfig();
   }
 }
 
-function capitalize(value) {
-  return value.slice(0, 1).toUpperCase() + value.slice(1);
+function sessionForRequest(session) {
+  return { ...session, locale: state.ui.locale };
 }
 
 function escapeHtml(value) {

@@ -25,10 +25,21 @@ export async function createServerSession(input) {
   );
 }
 
+export async function deleteServerSession(sessionId) {
+  return request(
+    `/api/sessions/${encodeURIComponent(sessionId)}`,
+    { method: "DELETE" },
+    () => ({ deleted: false })
+  );
+}
+
 export async function runServerPhase(session) {
   return request(
     `/api/sessions/${encodeURIComponent(session.id)}/run-phase`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: JSON.stringify({ locale: session.locale })
+    },
     () => runPhase(session)
   );
 }
@@ -36,8 +47,22 @@ export async function runServerPhase(session) {
 export async function advanceServerSession(session) {
   return request(
     `/api/sessions/${encodeURIComponent(session.id)}/advance`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: JSON.stringify({ locale: session.locale })
+    },
     () => advanceSession(session)
+  );
+}
+
+export async function autoRunServerSession(session) {
+  return request(
+    `/api/sessions/${encodeURIComponent(session.id)}/auto-run`,
+    {
+      method: "POST",
+      body: JSON.stringify({ locale: session.locale })
+    },
+    () => session
   );
 }
 
@@ -46,7 +71,7 @@ export async function askServerRole(session, roleId, prompt) {
     `/api/sessions/${encodeURIComponent(session.id)}/ask`,
     {
       method: "POST",
-      body: JSON.stringify({ roleId, prompt })
+      body: JSON.stringify({ roleId, prompt, locale: session.locale })
     },
     () => askRole(session, roleId, prompt)
   );
@@ -143,7 +168,10 @@ export async function completeServerRetrospective(session, input) {
 export async function crossValidateServerSession(session) {
   return request(
     `/api/sessions/${encodeURIComponent(session.id)}/cross-validate`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: JSON.stringify({ locale: session.locale })
+    },
     () => session
   );
 }
