@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/banner.svg" alt="Private Council banner" width="100%">
+  <img src="./assets/council-room-banner.svg" alt="Private Council banner" width="100%">
 </p>
 
 <h1 align="center">Private Council</h1>
@@ -208,4 +208,3 @@ npm run dev    # start local server
 ## Roadmap
 
 See [docs/ROADMAP.md](./docs/ROADMAP.md).
-
