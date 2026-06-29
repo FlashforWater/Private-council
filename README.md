@@ -1,10 +1,44 @@
-# Private Council
+<p align="center">
+  <img src="./assets/banner.svg" alt="Private Council banner" width="100%">
+</p>
 
-A local-first AI council for structured personal decisions.
+<h1 align="center">Private Council</h1>
 
-Private Council is not a multi-agent chat demo. It is a decision session system: a fixed council of roles helps frame a hard decision, preserve disagreement, update a Decision Canvas, record the human decision, and schedule a future retrospective.
+<p align="center">
+  <strong>A private AI council for your hardest decisions.</strong>
+</p>
 
-## What Works
+<p align="center">
+  Structured deliberation · Traceable decision records · Future retrospectives
+</p>
+
+<p align="center">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-27%20passing-2f855a">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-2563eb">
+  <img alt="Runtime" src="https://img.shields.io/badge/runtime-local--first-6b7280">
+  <img alt="Status" src="https://img.shields.io/badge/status-research%20prototype-a16207">
+</p>
+
+Private Council is not a multi-agent chat demo. It is a local-first decision session system: a fixed council of roles helps frame a hard decision, preserve disagreement, update a Decision Canvas, record the human decision, and schedule a future retrospective.
+
+## Why This Exists
+
+Hard personal decisions usually do not fail because one answer is missing. They fail because the thinking environment is weak: options are unclear, assumptions stay hidden, risks are vague, emotions are ignored, and no one comes back to review what happened.
+
+Private Council turns a decision into a structured meeting:
+
+```text
+Frame the problem
+→ collect context
+→ get independent council views
+→ challenge assumptions
+→ evaluate options
+→ make a human decision
+→ commit to next action
+→ review later
+```
+
+## Features
 
 - Local full-stack web app
 - Server-side session persistence
@@ -21,6 +55,7 @@ Private Council is not a multi-agent chat demo. It is a decision session system:
 - Prediction records and retrospective scoring
 - Reliability profile
 - Memory candidates and memory consent
+- Local long-term memory retrieval
 - Evidence records
 - Markdown decision report export
 - Basic safety routing for high-risk inputs
@@ -69,6 +104,27 @@ COUNCIL_MODEL_RESEARCHER=gemini-2.5-flash
 
 API keys are read only by the local Node server and are not sent to the browser.
 
+## Architecture
+
+```mermaid
+flowchart LR
+  User[User] --> UI[Browser UI]
+  UI --> API[Local Node API]
+  API --> Sessions[(sessions.json)]
+  API --> Memory[(memory.json)]
+  API --> Router[Protocol Router]
+  API --> Turns[Turn Allocator]
+  API --> Models[Model Adapters]
+  Models --> OpenAI[OpenAI]
+  Models --> Anthropic[Anthropic]
+  Models --> Gemini[Gemini]
+  Models --> DeepSeek[DeepSeek]
+  API --> Canvas[Decision Canvas]
+  Canvas --> Report[Decision Report]
+```
+
+More detail: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+
 ## Local Data
 
 Runtime data is stored under:
@@ -93,4 +149,8 @@ This is a local-first prototype suitable for experimentation and GitHub sharing.
 npm test       # run automated tests
 npm run dev    # start local server
 ```
+
+## Roadmap
+
+See [docs/ROADMAP.md](./docs/ROADMAP.md).
 
