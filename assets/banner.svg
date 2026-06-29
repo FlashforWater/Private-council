@@ -1,80 +1,141 @@
-<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="1400" height="640" viewBox="0 0 1400 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Private Council</title>
-  <desc id="desc">A refined banner showing an AI council table, structured decision canvas, and traceable judgment path.</desc>
+  <desc id="desc">A cinematic AI council room with multiple advisor roles around a glowing decision table and holographic decision canvas.</desc>
 
   <defs>
-    <linearGradient id="paper" x1="0" y1="0" x2="1200" y2="520" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F7F3EA"/>
-      <stop offset="1" stop-color="#ECE6DA"/>
+    <radialGradient id="roomGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(692 326) rotate(90) scale(370 600)">
+      <stop offset="0" stop-color="#1EE6C8" stop-opacity="0.28"/>
+      <stop offset="0.34" stop-color="#3A7BFF" stop-opacity="0.18"/>
+      <stop offset="0.72" stop-color="#10151F" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#07090D"/>
+    </radialGradient>
+    <linearGradient id="table" x1="327" y1="300" x2="1058" y2="496" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#121A24"/>
+      <stop offset="0.52" stop-color="#1B2735"/>
+      <stop offset="1" stop-color="#0B1018"/>
     </linearGradient>
-    <linearGradient id="ink" x1="160" y1="86" x2="1040" y2="438" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#2B2925"/>
-      <stop offset="1" stop-color="#11100F"/>
+    <linearGradient id="canvas" x1="792" y1="138" x2="1172" y2="405" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFFFFB" stop-opacity="0.92"/>
+      <stop offset="0.5" stop-color="#A7D8FF" stop-opacity="0.56"/>
+      <stop offset="1" stop-color="#5F7BFF" stop-opacity="0.16"/>
     </linearGradient>
-    <filter id="shadow" x="50" y="42" width="1100" height="440" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#3D3528" flood-opacity="0.16"/>
+    <linearGradient id="titleGrad" x1="100" y1="92" x2="660" y2="188" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.56" stop-color="#D7FFF6"/>
+      <stop offset="1" stop-color="#8EBBFF"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.12 0 0 0 0 0.9 0 0 0 0 0.8 0 0 0 0.7 0"/>
+      <feBlend in="SourceGraphic"/>
     </filter>
+    <filter id="cardShadow" x="730" y="72" width="526" height="432" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M38 0H0V38" stroke="#88FFF1" stroke-opacity="0.055"/>
+    </pattern>
   </defs>
 
-  <rect width="1200" height="520" fill="url(#paper)"/>
+  <rect width="1400" height="640" fill="#07090D"/>
+  <rect width="1400" height="640" fill="url(#roomGlow)"/>
+  <rect width="1400" height="640" fill="url(#grid)"/>
 
-  <g filter="url(#shadow)">
-    <rect x="84" y="72" width="1032" height="376" rx="28" fill="#FFFDF7"/>
+  <path d="M76 514C224 432 316 390 462 390C593 390 628 432 735 432C865 432 935 344 1114 330C1206 323 1270 337 1324 358" stroke="#75FFF2" stroke-opacity="0.22" stroke-width="2"/>
+  <path d="M0 574C184 468 320 426 483 430C620 434 678 492 817 486C998 478 1071 384 1400 420" stroke="#5E8CFF" stroke-opacity="0.18" stroke-width="2"/>
+
+  <g opacity="0.82">
+    <text x="92" y="126" fill="#7DFFF1" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="15" font-weight="700" letter-spacing="3.5">PRIVATE DECISION COUNCIL</text>
+    <text x="90" y="190" fill="url(#titleGrad)" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="74" font-weight="850" letter-spacing="0">Private Council</text>
+    <text x="96" y="238" fill="#B8C7D9" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="24" font-weight="520" letter-spacing="0">A structured AI council for decisions that deserve more than an answer.</text>
   </g>
 
-  <rect x="84.5" y="72.5" width="1031" height="375" rx="27.5" stroke="#D7CFC1"/>
-
-  <g opacity="0.55">
-    <path d="M144 168H1056" stroke="#E6DED2"/>
-    <path d="M144 352H1056" stroke="#E6DED2"/>
-    <path d="M414 108V412" stroke="#E6DED2"/>
-    <path d="M784 108V412" stroke="#E6DED2"/>
+  <g transform="translate(114 286)">
+    <rect x="0" y="0" width="258" height="40" rx="20" fill="#101722" stroke="#2AEED4" stroke-opacity="0.45"/>
+    <circle cx="24" cy="20" r="6" fill="#2AEED4"/>
+    <text x="42" y="26" fill="#E8FFFB" font-family="Inter, ui-sans-serif, system-ui" font-size="15" font-weight="700">Council advises</text>
+    <rect x="0" y="54" width="230" height="40" rx="20" fill="#101722" stroke="#FFB84D" stroke-opacity="0.42"/>
+    <circle cx="24" cy="74" r="6" fill="#FFB84D"/>
+    <text x="42" y="80" fill="#FFF6E8" font-family="Inter, ui-sans-serif, system-ui" font-size="15" font-weight="700">Human decides</text>
+    <rect x="0" y="108" width="302" height="40" rx="20" fill="#101722" stroke="#8FA5FF" stroke-opacity="0.42"/>
+    <circle cx="24" cy="128" r="6" fill="#8FA5FF"/>
+    <text x="42" y="134" fill="#EEF1FF" font-family="Inter, ui-sans-serif, system-ui" font-size="15" font-weight="700">Every decision becomes memory</text>
   </g>
 
-  <text x="144" y="140" fill="#24211D" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="46" font-weight="800" letter-spacing="0">
-    Private Council
-  </text>
-  <text x="144" y="182" fill="#746D62" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="20" font-weight="500" letter-spacing="0">
-    Structured deliberation for decisions that deserve a trace.
-  </text>
+  <g transform="translate(260 260)">
+    <ellipse cx="430" cy="202" rx="356" ry="86" fill="#05070B" fill-opacity="0.56"/>
+    <ellipse cx="430" cy="190" rx="310" ry="78" fill="url(#table)" stroke="#2AEED4" stroke-opacity="0.32" stroke-width="2"/>
+    <ellipse cx="430" cy="190" rx="188" ry="42" fill="#122332" stroke="#7DFFF1" stroke-opacity="0.28"/>
+    <ellipse cx="430" cy="190" rx="92" ry="19" fill="#DFFFF9" fill-opacity="0.08"/>
+    <path d="M237 190C278 143 345 116 430 116C515 116 582 143 623 190" stroke="#7DFFF1" stroke-opacity="0.28" stroke-width="2"/>
+    <path d="M237 190C278 237 345 264 430 264C515 264 582 237 623 190" stroke="#7DFFF1" stroke-opacity="0.18" stroke-width="2"/>
 
-  <g transform="translate(150 232)">
-    <ellipse cx="134" cy="74" rx="118" ry="42" fill="url(#ink)"/>
-    <ellipse cx="134" cy="74" rx="74" ry="23" fill="#34312C"/>
-    <circle cx="134" cy="74" r="10" fill="#F4EFE5"/>
+    <g filter="url(#softGlow)">
+      <circle cx="430" cy="189" r="18" fill="#7DFFF1"/>
+      <path d="M430 108V72M430 306V268M226 190H190M670 190H634M286 85L313 112M574 85L547 112M286 295L313 268M574 295L547 268" stroke="#7DFFF1" stroke-opacity="0.58" stroke-width="2" stroke-linecap="round"/>
+    </g>
 
-    <circle cx="31" cy="62" r="18" fill="#315F91"/>
-    <circle cx="237" cy="62" r="18" fill="#93483D"/>
-    <circle cx="70" cy="13" r="18" fill="#3E7652"/>
-    <circle cx="198" cy="13" r="18" fill="#66569A"/>
-    <circle cx="70" cy="135" r="18" fill="#94703B"/>
-    <circle cx="198" cy="135" r="18" fill="#2F7874"/>
-
-    <path d="M48 94C63 121 94 140 134 140C174 140 205 121 220 94" stroke="#CFC5B6" stroke-width="2"/>
-    <path d="M48 54C63 27 94 8 134 8C174 8 205 27 220 54" stroke="#CFC5B6" stroke-width="2"/>
+    <g>
+      <g transform="translate(412 20)">
+        <circle cx="34" cy="34" r="30" fill="#111A26" stroke="#E8F4FF" stroke-opacity="0.28"/>
+        <circle cx="34" cy="34" r="16" fill="#F4F8FF"/>
+        <text x="34" y="88" text-anchor="middle" fill="#DDE7F5" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Chair</text>
+      </g>
+      <g transform="translate(214 78)">
+        <circle cx="34" cy="34" r="30" fill="#0B1B2B" stroke="#4FA3FF" stroke-opacity="0.7"/>
+        <path d="M22 38L32 26L42 36L48 24" stroke="#4FA3FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="34" y="88" text-anchor="middle" fill="#BFDFFF" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Strategist</text>
+      </g>
+      <g transform="translate(606 78)">
+        <circle cx="34" cy="34" r="30" fill="#2A1013" stroke="#FF6B6B" stroke-opacity="0.72"/>
+        <path d="M24 24L44 44M44 24L24 44" stroke="#FF7C7C" stroke-width="4" stroke-linecap="round"/>
+        <text x="34" y="88" text-anchor="middle" fill="#FFD2D2" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Skeptic</text>
+      </g>
+      <g transform="translate(286 250)">
+        <circle cx="34" cy="34" r="30" fill="#0D2418" stroke="#4ADE80" stroke-opacity="0.72"/>
+        <path d="M20 39H48M20 29H40M20 49H34" stroke="#64F099" stroke-width="4" stroke-linecap="round"/>
+        <text x="34" y="88" text-anchor="middle" fill="#C9FDD9" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Operator</text>
+      </g>
+      <g transform="translate(526 250)">
+        <circle cx="34" cy="34" r="30" fill="#20153A" stroke="#A78BFA" stroke-opacity="0.72"/>
+        <circle cx="28" cy="30" r="7" stroke="#BBA7FF" stroke-width="4"/>
+        <path d="M39 41L50 52" stroke="#BBA7FF" stroke-width="4" stroke-linecap="round"/>
+        <text x="34" y="88" text-anchor="middle" fill="#E0D8FF" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Researcher</text>
+      </g>
+      <g transform="translate(92 178)">
+        <circle cx="34" cy="34" r="30" fill="#2B210D" stroke="#FBBF24" stroke-opacity="0.75"/>
+        <path d="M34 20C43 28 49 33 49 42C49 50 43 56 34 56C25 56 19 50 19 42C19 33 25 28 34 20Z" fill="#FFD166"/>
+        <text x="34" y="88" text-anchor="middle" fill="#FFE7A3" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Advocate</text>
+      </g>
+      <g transform="translate(736 178)">
+        <circle cx="34" cy="34" r="30" fill="#0C2625" stroke="#2DD4BF" stroke-opacity="0.75"/>
+        <path d="M22 34C22 25 28 20 36 20C45 20 51 27 50 36C49 46 41 53 30 53H24" stroke="#5EF7E4" stroke-width="4" stroke-linecap="round"/>
+        <text x="34" y="88" text-anchor="middle" fill="#BFFCF2" font-family="Inter, ui-sans-serif, system-ui" font-size="13" font-weight="800">Reflector</text>
+      </g>
+    </g>
   </g>
 
-  <g transform="translate(462 218)">
-    <rect width="260" height="38" rx="10" fill="#24211D"/>
-    <rect x="20" y="14" width="122" height="10" rx="5" fill="#FFFDF7"/>
-    <rect y="58" width="260" height="38" rx="10" fill="#F4F0E8" stroke="#D8CFC0"/>
-    <rect x="20" y="72" width="190" height="10" rx="5" fill="#7B746A"/>
-    <rect y="116" width="260" height="38" rx="10" fill="#F4F0E8" stroke="#D8CFC0"/>
-    <rect x="20" y="130" width="158" height="10" rx="5" fill="#7B746A"/>
-    <path d="M286 18H338" stroke="#A79B8B" stroke-width="2"/>
-    <path d="M330 10L338 18L330 26" stroke="#A79B8B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <g filter="url(#cardShadow)" transform="translate(790 92)">
+    <path d="M34 0H414C432.778 0 448 15.2223 448 34V342C448 360.778 432.778 376 414 376H34C15.2223 376 0 360.778 0 342V34C0 15.2223 15.2223 0 34 0Z" fill="#08101A" fill-opacity="0.84" stroke="#8FFFF2" stroke-opacity="0.28"/>
+    <path d="M1 76H447" stroke="#8FFFF2" stroke-opacity="0.12"/>
+    <circle cx="34" cy="38" r="7" fill="#FF6B6B"/>
+    <circle cx="58" cy="38" r="7" fill="#FFB84D"/>
+    <circle cx="82" cy="38" r="7" fill="#4ADE80"/>
+    <text x="112" y="44" fill="#E9FFFB" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14" font-weight="800" letter-spacing="1.4">DECISION CANVAS</text>
 
-  <g transform="translate(834 170)">
-    <rect width="220" height="206" rx="18" fill="#FAF7EF" stroke="#D8CFC0"/>
-    <text x="24" y="42" fill="#24211D" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18" font-weight="800">Decision Canvas</text>
-    <rect x="24" y="66" width="164" height="9" rx="4.5" fill="#8B8377"/>
-    <rect x="24" y="92" width="126" height="9" rx="4.5" fill="#B2A99D"/>
-    <rect x="24" y="122" width="172" height="32" rx="9" fill="#EAF0EA" stroke="#B7CEBD"/>
-    <rect x="24" y="166" width="172" height="32" rx="9" fill="#F6ECE8" stroke="#D9B9AF"/>
+    <g transform="translate(34 112)">
+      <rect width="172" height="42" rx="12" fill="#F8FFFD" fill-opacity="0.08" stroke="#8FFFF2" stroke-opacity="0.22"/>
+      <text x="18" y="27" fill="#DFFFF9" font-family="Inter, ui-sans-serif, system-ui" font-size="14" font-weight="800">Claims</text>
+      <rect x="210" width="172" height="42" rx="12" fill="#F8FFFD" fill-opacity="0.08" stroke="#FFB84D" stroke-opacity="0.25"/>
+      <text x="228" y="27" fill="#FFF0CF" font-family="Inter, ui-sans-serif, system-ui" font-size="14" font-weight="800">Assumptions</text>
+      <rect y="66" width="172" height="42" rx="12" fill="#F8FFFD" fill-opacity="0.08" stroke="#FF6B6B" stroke-opacity="0.25"/>
+      <text x="18" y="93" fill="#FFD7D7" font-family="Inter, ui-sans-serif, system-ui" font-size="14" font-weight="800">Risks</text>
+      <rect x="210" y="66" width="172" height="42" rx="12" fill="#F8FFFD" fill-opacity="0.08" stroke="#A78BFA" stroke-opacity="0.25"/>
+      <text x="228" y="93" fill="#E4DDFF" font-family="Inter, ui-sans-serif, system-ui" font-size="14" font-weight="800">Evidence</text>
+      <path d="M86 154H296" stroke="#8FFFF2" stroke-opacity="0.4" stroke-width="2"/>
+      <path d="M284 144L296 154L284 164" stroke="#8FFFF2" stroke-opacity="0.65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="72" y="184" width="248" height="50" rx="16" fill="url(#canvas)" fill-opacity="0.18" stroke="#8FFFF2" stroke-opacity="0.42"/>
+      <text x="112" y="216" fill="#F4FFFD" font-family="Inter, ui-sans-serif, system-ui" font-size="15" font-weight="850">Human Decision</text>
+    </g>
   </g>
-
-  <text x="144" y="404" fill="#81786C" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="600">
-    Council advises. Human decides. Every decision becomes learning material.
-  </text>
 </svg>
