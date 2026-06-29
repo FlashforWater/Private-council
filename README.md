@@ -61,6 +61,23 @@ Private Council is useful when a decision is too important for a quick answer bu
 - Why did a past decision fail or succeed?
 - Which option best fits my values, constraints, and energy?
 
+## Try This Demo Decision
+
+Run the app in mock mode and paste this into the decision question:
+
+```text
+Should I quit my job to work on my AI product?
+```
+
+Suggested context:
+
+```text
+I have a prototype, some savings, and strong motivation, but no paying users yet.
+I am excited, but worried about income stability.
+```
+
+Then click `Continue` through the session phases. Watch the council produce role-specific views while the Decision Canvas accumulates claims, assumptions, risks, options, predictions, and a review plan.
+
 ## How It Works
 
 ```text
@@ -130,6 +147,12 @@ http://127.0.0.1:4173/
 
 The app runs without API keys in mock mode.
 
+To force mock mode explicitly:
+
+```bash
+COUNCIL_PROVIDER=mock npm run dev
+```
+
 ## Configure Models
 
 Copy the example file:
@@ -198,6 +221,17 @@ This is a research/product prototype. It is not for medical, legal, investment, 
 
 This is a local-first prototype suitable for experimentation and GitHub sharing. It is not production-ready: there is no authentication, cloud database, access control, billing, deployment hardening, or full privacy/security review.
 
+## Known Limitations
+
+- No authentication or multi-user permissions
+- Local JSON storage only
+- No production encryption or audit logging
+- No real web search or citation pipeline yet
+- Evidence quality is user-provided, not independently verified
+- Safety routing is rule-based, not a full safety classifier
+- Model calls can incur provider costs when real API keys are configured
+- The UI is a prototype, not a polished production application
+
 ## Commands
 
 ```bash
@@ -208,3 +242,9 @@ npm run dev    # start local server
 ## Roadmap
 
 See [docs/ROADMAP.md](./docs/ROADMAP.md).
+
+## Contributing
+
+Contributions are welcome for algorithms, UX, documentation, safety boundaries, model adapters, and evaluation tooling.
+
+Start here: [CONTRIBUTING.md](./CONTRIBUTING.md)
