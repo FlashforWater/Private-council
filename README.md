@@ -5,11 +5,11 @@
 <h1 align="center">Private Council</h1>
 
 <p align="center">
-  <strong>A private AI council for your hardest decisions.</strong>
+  <strong>Most AI tools answer questions. Private Council helps you make decisions.</strong>
 </p>
 
 <p align="center">
-  Structured deliberation · Traceable decision records · Future retrospectives
+  A local-first AI council for structured deliberation, traceable judgment, and future retrospectives.
 </p>
 
 <p align="center">
@@ -19,24 +19,82 @@
   <img alt="Status" src="https://img.shields.io/badge/status-research%20prototype-a16207">
 </p>
 
-Private Council is not a multi-agent chat demo. It is a local-first decision session system: a fixed council of roles helps frame a hard decision, preserve disagreement, update a Decision Canvas, record the human decision, and schedule a future retrospective.
+Private Council is not a multi-agent chat demo. It is a structured decision session system.
 
-## Why This Exists
+It does not just generate advice. It frames the decision, separates roles from models, preserves disagreement, turns arguments into a Decision Canvas, records the human decision, and brings the decision back for review.
 
-Hard personal decisions usually do not fail because one answer is missing. They fail because the thinking environment is weak: options are unclear, assumptions stay hidden, risks are vague, emotions are ignored, and no one comes back to review what happened.
+## What Makes It Different
 
-Private Council turns a decision into a structured meeting:
+### Decision Canvas, not chat history
+
+The conversation is not the product. The product is the evolving decision record: options, criteria, claims, assumptions, risks, evidence, objections, predictions, recommendation, human decision, and review plan.
+
+### Roles are cognitive functions, not model mascots
+
+Chair, Strategist, Skeptic, Operator, Researcher, User Advocate, and Reflector are stable responsibilities. The model behind each role can change through routing.
+
+### Disagreement is preserved before synthesis
+
+Private Council does not rush to consensus. It tracks challenges, minority objections, fragile assumptions, and cross-validation triggers before producing a recommendation.
+
+### Voting is a signal, not a verdict
+
+Role preferences are not treated as the decision rule. The system surfaces where roles agree, where they disagree, why they disagree, and which objection could overturn the recommendation.
+
+### The human decides
+
+The council advises, challenges, structures, and records. The final decision always belongs to the user.
+
+### Every decision becomes learning material
+
+The system records predictions and supports retrospectives, so a decision can improve future judgment instead of disappearing into chat history.
+
+## When To Use It
+
+Private Council is useful when a decision is too important for a quick answer but too personal for a formal team meeting:
+
+- Should I leave my job, change direction, or stay?
+- Should I continue building this product?
+- Which project should I prioritize?
+- Is my current plan actually executable?
+- What should I validate before committing?
+- Why did a past decision fail or succeed?
+- Which option best fits my values, constraints, and energy?
+
+## How It Works
 
 ```text
 Frame the problem
 → collect context
-→ get independent council views
+→ generate independent council views
 → challenge assumptions
 → evaluate options
-→ make a human decision
+→ recommend with objections preserved
+→ human decides
 → commit to next action
-→ review later
+→ schedule review
+→ retrospective and reliability learning
 ```
+
+## Algorithmic Core
+
+This repository includes first working versions of:
+
+- Protocol Router
+- Turn Allocator
+- Cross-validation Trigger
+- Claim Aggregator
+- Evaluation Engine
+- Reliability Engine
+- Memory Governance
+- Evidence and report workflow
+
+Read more:
+
+- [Design Philosophy](./docs/PHILOSOPHY.md)
+- [Algorithms](./docs/ALGORITHMS.md)
+- [Voting and Aggregation](./docs/VOTING_AND_AGGREGATION.md)
+- [Research Foundations](./docs/RESEARCH_FOUNDATIONS.md)
 
 ## Features
 
@@ -47,15 +105,12 @@ Frame the problem
 - OpenAI, Anthropic, Gemini, and DeepSeek adapter layer
 - Per-role provider/model routing
 - Mock fallback when keys are missing or provider calls fail
-- Protocol routing
-- Turn allocation
-- Cross-validation trigger and manual cross-validation
-- Claim aggregation and disagreement panel
+- Decision Canvas
+- Manual and triggered cross-validation
 - Weighted multi-criteria evaluation
 - Prediction records and retrospective scoring
 - Reliability profile
-- Memory candidates and memory consent
-- Local long-term memory retrieval
+- Memory candidates, consent, and retrieval
 - Evidence records
 - Markdown decision report export
 - Basic safety routing for high-risk inputs
