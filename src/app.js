@@ -58,6 +58,7 @@ const TEXT = {
     modelStatus: "Model status",
     councilRoom: "Council Room",
     transcript: "Transcript",
+    entries: "entries",
     decisionCanvas: "Decision Canvas",
     traceableRecord: "Traceable record",
     decided: "decided",
@@ -130,6 +131,7 @@ const TEXT = {
     reject: "Reject",
     runningCouncil: "Running council",
     meetingControls: "Meeting controls",
+    quickControls: "Quick controls",
     running: "Running...",
     continue: "Continue",
     autoRun: "Auto-run",
@@ -214,6 +216,7 @@ const TEXT = {
     modelStatus: "模型状态",
     councilRoom: "智囊团会场",
     transcript: "会议记录",
+    entries: "条记录",
     decisionCanvas: "决策画布",
     traceableRecord: "可追溯记录",
     decided: "已决策",
@@ -286,6 +289,7 @@ const TEXT = {
     reject: "拒绝",
     runningCouncil: "智囊团运行中",
     meetingControls: "会议控制",
+    quickControls: "快捷控制",
     running: "运行中...",
     continue: "继续",
     autoRun: "自动运行",
@@ -695,17 +699,48 @@ function renderCouncil(session) {
       <span class="status-pill">${phaseLabel(session.currentPhase)}</span>
     </div>
     ${renderPhaseRail(session)}
+    ${renderQuickControls(session)}
     <div class="role-grid">
       ${COUNCIL_ROLES.map((role) => renderRoleCard(role, session)).join("")}
     </div>
-    <div class="transcript">
-      <div class="section-title">${t("transcript")}</div>
-      ${session.transcript
-        .slice()
-        .reverse()
-        .map((message) => renderMessage(message))
-        .join("")}
+    ${renderTranscript(session)}
+  `;
+}
+
+function renderQuickControls(session) {
+  return `
+    <div class="quick-controls">
+      <div>
+        <div class="section-title">${t("quickControls")}</div>
+        <p>${t("nextPhase")}: ${phaseLabel(nextPhase(session.currentPhase))}</p>
+      </div>
+      <div class="quick-actions">
+        <button class="primary" data-action="continue" ${state.ui.loading ? "disabled" : ""}>${state.ui.loading ? t("running") : t("continue")}</button>
+        <button class="auto-run-button" data-action="auto-run" ${state.ui.loading ? "disabled" : ""}>${t("autoRun")}</button>
+        <button data-action="run-phase" ${state.ui.loading ? "disabled" : ""}>${t("runCurrentPhase")}</button>
+        <button data-action="challenge" ${state.ui.loading ? "disabled" : ""}>${t("challengeThis")}</button>
+        <button data-action="cross-validate" ${state.ui.loading ? "disabled" : ""}>${t("crossValidation")}</button>
+        <button data-action="recommend" ${state.ui.loading ? "disabled" : ""}>${t("generateRecommendation")}</button>
+        <a class="button-link" href="${reportUrl(session)}" target="_blank" rel="noreferrer">${t("exportReport")}</a>
+      </div>
     </div>
+    ${state.ui.loading ? renderRunStatus(state.ui.loadingLabel || t("runningCouncil")) : ""}
+  `;
+}
+
+function renderTranscript(session) {
+  return `
+    <section class="transcript">
+      <div class="transcript-header">
+        <div>
+          <div class="section-title">${t("transcript")}</div>
+          <p>${session.transcript.length} ${t("entries")}</p>
+        </div>
+      </div>
+      <div class="transcript-feed">
+        ${session.transcript.map((message) => renderMessage(message)).join("")}
+      </div>
+    </section>
   `;
 }
 
@@ -729,9 +764,15 @@ function renderRoleCard(role, session) {
     .slice()
     .reverse()
     .find((run) => run.roleId === role.id);
+  const plannedRoute = plannedRoleRoute(role.id);
   const active = session.transcript[session.transcript.length - 1]?.roleId === role.id;
   const stateLabel = active ? t("speaking") : lastRun ? t("idle") : t("waiting");
-  const routeLabel = lastRun?.provider && lastRun?.model ? `${lastRun.provider} / ${lastRun.model}` : t("routePending");
+  const routeLabel =
+    lastRun?.provider && lastRun?.model
+      ? `${lastRun.provider} / ${lastRun.model}`
+      : plannedRoute
+        ? `${plannedRoute.provider} / ${plannedRoute.model}`
+        : t("routePending");
 
   return `
     <article class="role-card ${active ? "active" : ""}" data-role="${role.id}">
@@ -747,16 +788,26 @@ function renderRoleCard(role, session) {
   `;
 }
 
+function plannedRoleRoute(roleId) {
+  return state.ui.apiConfig.roleRoutes?.find((route) => route.roleId === roleId);
+}
+
 function renderMessage(message) {
   const role = COUNCIL_ROLES.find((item) => item.id === message.roleId);
+  const displayName = role ? roleName(role) : message.speaker;
+  const avatarText = role ? role.name.slice(0, 1) : "U";
+  const roleColor = role?.color || "user";
   return `
-    <article class="message ${message.roleId === "user" ? "from-user" : ""}">
-      <div class="message-meta">
-        <strong>${escapeHtml(message.speaker)}</strong>
-        <span>${phaseLabel(message.phase)}</span>
+    <article class="message ${message.roleId === "user" ? "from-user" : ""}" data-role="${escapeHtml(message.roleId)}">
+      <span class="message-avatar ${roleColor}">${escapeHtml(avatarText)}</span>
+      <div class="message-body">
+        <div class="message-meta">
+          <strong>${escapeHtml(displayName)}</strong>
+          <span>${phaseLabel(message.phase)}</span>
+        </div>
+        <p>${escapeHtml(message.content)}</p>
+        ${role ? `<small>${escapeHtml(rolePurpose(role))}</small>` : ""}
       </div>
-      <p>${escapeHtml(message.content)}</p>
-      ${role ? `<small>${escapeHtml(rolePurpose(role))}</small>` : ""}
     </article>
   `;
 }
@@ -1037,20 +1088,6 @@ function renderActions(session) {
   return `
     ${state.ui.loading ? renderRunStatus(loadingLabel) : ""}
     <div class="dock-grid">
-      <section class="dock-card">
-        <div class="section-title">${t("meetingControls")}</div>
-        <div class="button-row">
-          <button class="primary" data-action="continue" ${state.ui.loading ? "disabled" : ""}>${state.ui.loading ? t("running") : t("continue")}</button>
-          <button class="auto-run-button" data-action="auto-run" ${state.ui.loading ? "disabled" : ""}>${t("autoRun")}</button>
-          <button data-action="run-phase" ${state.ui.loading ? "disabled" : ""}>${t("runCurrentPhase")}</button>
-          <button data-action="challenge" ${state.ui.loading ? "disabled" : ""}>${t("challengeThis")}</button>
-          <button data-action="cross-validate" ${state.ui.loading ? "disabled" : ""}>${t("crossValidation")}</button>
-          <button data-action="recommend" ${state.ui.loading ? "disabled" : ""}>${t("generateRecommendation")}</button>
-          <a class="button-link" href="${reportUrl(session)}" target="_blank" rel="noreferrer">${t("exportReport")}</a>
-        </div>
-        <p class="muted">${t("nextPhase")}: ${phaseLabel(nextPhase(session.currentPhase))}</p>
-      </section>
-
       <section class="dock-card">
         <div class="section-title">${t("evidence")}</div>
         <div class="inline-form">

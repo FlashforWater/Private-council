@@ -680,26 +680,159 @@ p {
   line-height: 1.45;
 }
 
+.quick-controls {
+  position: sticky;
+  top: -16px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(160px, 0.28fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 14px;
+  border: 1px solid rgba(126, 255, 241, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(125, 255, 241, 0.12), rgba(94, 140, 255, 0.08)),
+    rgba(4, 10, 19, 0.94);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 10px;
+}
+
+.quick-controls p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.quick-actions button,
+.quick-actions .button-link {
+  min-height: 34px;
+  white-space: nowrap;
+}
+
 .transcript {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin-top: 18px;
+  border: 1px solid rgba(126, 255, 241, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(8, 18, 32, 0.6), rgba(4, 9, 18, 0.72)),
+    rgba(5, 11, 21, 0.72);
+  padding: 12px;
+}
+
+.transcript-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(126, 255, 241, 0.12);
+  padding-bottom: 10px;
+}
+
+.transcript-header p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.transcript-feed {
+  position: relative;
+  display: grid;
+  gap: 10px;
+}
+
+.transcript-feed::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 18px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(125, 255, 241, 0.36), rgba(125, 255, 241, 0.04));
+  content: "";
 }
 
 .message {
+  position: relative;
   display: grid;
-  gap: 7px;
-  border: 1px solid rgba(126, 255, 241, 0.14);
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  border: 1px solid rgba(126, 255, 241, 0.12);
   border-radius: 8px;
-  background: rgba(7, 15, 28, 0.78);
-  padding: 12px;
+  background:
+    linear-gradient(90deg, rgba(125, 255, 241, 0.06), transparent 40%),
+    rgba(7, 15, 28, 0.72);
+  padding: 10px;
 }
 
 .message.from-user {
   border-color: rgba(255, 184, 77, 0.32);
-  background: rgba(39, 28, 9, 0.48);
+  background:
+    linear-gradient(90deg, rgba(255, 184, 77, 0.1), transparent 42%),
+    rgba(39, 28, 9, 0.48);
+}
+
+.message-avatar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(125, 255, 241, 0.1);
+}
+
+.message-avatar.ink,
+.message-avatar.user {
+  background: #172033;
+}
+
+.message-avatar.blue {
+  background: var(--blue);
+}
+
+.message-avatar.green {
+  background: var(--green);
+}
+
+.message-avatar.red {
+  background: var(--red);
+}
+
+.message-avatar.amber {
+  background: var(--amber);
+}
+
+.message-avatar.violet {
+  background: var(--violet);
+}
+
+.message-avatar.teal {
+  background: var(--teal);
+}
+
+.message-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
 }
 
 .message-meta {
@@ -997,6 +1130,15 @@ input[type="range"] {
   .dock-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .quick-controls {
+    grid-template-columns: 1fr;
+    position: static;
+  }
+
+  .quick-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1020,6 +1162,19 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 
+  .quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quick-actions button,
+  .quick-actions .button-link {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+    white-space: normal;
+  }
+
   .panel-header {
     display: grid;
   }
@@ -1030,5 +1185,18 @@ input[type="range"] {
 
   .criterion {
     grid-template-columns: 1fr 90px 22px;
+  }
+
+  .message {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .transcript-feed::before {
+    left: 16px;
   }
 }
